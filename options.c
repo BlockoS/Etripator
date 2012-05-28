@@ -17,7 +17,9 @@
 */
 #include "options.h"
 
-/* Print usage */
+/** 
+ * Print usage.
+ */
 void usage()
 {
 	fprintf(stderr, "Usage : etripator [options] <cfg> <in>\n"
@@ -30,7 +32,15 @@ void usage()
 			"                     option is enabled.\n");
 }
 
-/* Extract command line options */
+/**
+ * Parse command line options.
+ * \param [in] argc Command line argument count.
+ * \param [in] argv Command line argument string array.
+ * \param [out] iOptions Command line options.
+ * \return 
+ *		<= 0 if an error occured.
+ *		> 0 on success.
+ */
 int getCommandLineOptions(int argc, char** argv, CommandLineOptions* iOptions)
 {
 	char *shortOptions = "icho:";

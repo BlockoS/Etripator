@@ -19,7 +19,7 @@
 #define ETRIPATOR_CFG_H
 
 /**
- * \brief CFG parsing errors
+ * \brief CFG parsing errors.
  */
 typedef enum
 {
@@ -41,69 +41,63 @@ typedef enum
 
 /**
  * \brief Get the message associated to current CFG parsing error.
- *
  * \param err  Error value.
  * \return Error message.
  */
 const char* GetCFGErrorMsg(CFG_ERR err);
 
 /**
- * \brief Payload structure for CFG/Ini file parser
+ * \brief Section start callback.
+ * This callback will be called when the parser encounters a new section block.
+ * \param [in] data user provided data 
+ * \param [in] sectionName section name
+ * \return 
+ *     <=0 failure
+ *     >0 success 
+ */
+typedef int (*CFGBeginSectionProc) (void *data, const char* sectionName);
+
+/**
+ * \brief Section end callback.
+ * This callback will be called when the current section is over (ie at end of file or when a new section starts).
+ * \param [in] data user provided data 
+ * \return 
+ *     <=0 failure
+ *     >0 success 
+ */
+typedef int (*CFGEndSectionProc) (void *data);
+
+/**
+ * \brief Key value callback.
+ * This callback is called when the parser encounters a new key/value pair.
+ * \param [in] data user provided data 
+ * \param [in] key key name
+ * \param [in] value value name
+ * \return
+ *     <=0 failure
+ *     >0 success 
+ */
+typedef int (*CFGKeyValueProc) (void *data, const char* key, const char* value);
+
+
+/**
+ * \brief Payload structure for CFG/Ini file parser.
  */
 struct CFGPayload
 {
-	void *data; /*!< Use data which will be passed as argument to one the callback function. */
+	void *data; /**< Use data which will be passed as argument to one the callback function. */
 
-	int  line;  /*!< Current line number. */
+	int  line;  /**< Current line number. */
 
-	/**
-	 * \brief Section start callback
-	 *
-	 * This callback will be called when the parser encounters a new section block.
-	 *
-	 * \param data user provided data 
-	 * \param sectionName section name
-	 * 
-	 * \return 
-	 *     <=0 failure
-	 *     >0 success 
-	 */
-	int (*beginSectionCallback) (void *data, const char* sectionName);
-
-	/**
-	 * \brief Section end callback
-	 *
-	 * This callback will be called when the current section is over (ie at end of file or when a new section starts).
-	 *
-	 * \param data user provided data 
-	 * 
-	 * \return 
-	 *     <=0 failure
-	 *     >0 success 
-	 */
-	int (*endSectionCallback) (void *data);
-
-	/**
-	 * \brief Key value callback
-	 *
-	 * This callback is called when the parser encounters a new key/value pair.
-	 *
-	 * \param data user provided data 
-	 * \param key key name
-	 * \param value value name
-	 * 
-	 * \return
-	 *     <=0 failure
-	 *     >0 success 
-	 */
-	int (*keyValueCallback)    (void *data, const char* key, const char* value);
+	CFGBeginSectionProc beginSectionCallback; /**< Section start callback. */
+	CFGEndSectionProc   endSectionCallback;   /**< Section end callback. */
+	CFGKeyValueProc     keyValueCallback;     /**< Key value callback. */
 };
 
 /**
- * \brief Parse CFG file
- *
- * \param filename CFG/Ini filename.
- * \param payload User defined callbacks and data.
+ * \brief Parse CFG file.
+ * \param [in] filename CFG/Ini filename.
+ * \param [in] payload User defined callbacks and data.
  * \return \see CFG_ERR
  */
 CFG_ERR ParseCFG(const char* filename, struct CFGPayload* payload);

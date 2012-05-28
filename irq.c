@@ -16,6 +16,7 @@
     along with Etripator.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "irq.h"
+#include "message.h"
 
 static char* IRQNames[5] = {
 	"irq_2.asm",
@@ -25,7 +26,14 @@ static char* IRQNames[5] = {
 	"irq_reset.asm"
 };
 
-/* Get irq code offsets from rom */
+/**
+ * Get irq code offsets from rom.
+ * \param [in]  iRomFile Rom file.
+ * \param [out] iSectionArray Section array.
+ * \return 
+ *		0 if an error occured.
+ *		1 otherwise.
+ */
 int getIRQSections(FILE* iRomFile, Section* iSectionArray)
 {
 	int err, i;
@@ -62,7 +70,7 @@ int getIRQSections(FILE* iRomFile, Section* iSectionArray)
 		iSectionArray[i].size  = 0;
 		iSectionArray[i].id    = i;
 
-		printf("%s found at %04x (%lx)\n", iSectionArray[i].name, iSectionArray[i].org, iSectionArray[i].start);
+		INFO_MSG("%s found at %04x (%lx)\n", iSectionArray[i].name, iSectionArray[i].org, iSectionArray[i].start);
 	}
 	
 	return 1;

@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cfg.c" />
+    <ClCompile Include="..\..\cfgext.c" />
     <ClCompile Include="..\..\decode.c" />
     <ClCompile Include="..\..\etripator.c" />
     <ClCompile Include="..\..\irq.c" />
@@ -114,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cfg.h" />
+    <ClInclude Include="..\..\cfgext.h" />
     <ClInclude Include="..\..\config.h" />
     <ClInclude Include="..\..\decode.h" />
     <ClInclude Include="..\..\irq.h" />

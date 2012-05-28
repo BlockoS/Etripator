@@ -20,21 +20,33 @@
 
 #include "config.h"
 
-/* Command line options */
+/**
+ * Command line options.
+ */
 struct CommandLineOptions_
 {
-	uint8_t extractIRQ;
-	uint8_t cdrom;
-	char *cfgFileName;
-	char *romFileName;
-	char *mainFileName;
+	uint8_t extractIRQ;  /**< Automatic IRQ extraction flag. */
+	uint8_t cdrom;       /**< CDROM disassembly flag. */
+	char *cfgFileName;   /**< CFG/Ini filename. */
+	char *romFileName;   /**< ROM filename. */
+	char *mainFileName;  /**< Main assembly filename. */
 };
 typedef struct CommandLineOptions_ CommandLineOptions;
 
-/* Print usage */
+/**
+ * Print usage.
+ */
 void usage();
 
-/* Extract command line options */
-int getCommandLineOptions(int, char**, CommandLineOptions*);
+/**
+ * Parse command line options.
+ * \param [in] argc Command line argument count.
+ * \param [in] argv Command line argument string array.
+ * \param [out] iOptions Command line options.
+ * \return 
+ *		<= 0 if an error occured.
+ *		> 0 on success.
+ */
+int getCommandLineOptions(int argc, char** argv, CommandLineOptions* iOptions);
 
 #endif // OPTIONS_H

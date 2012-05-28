@@ -21,7 +21,14 @@
 #include "config.h"
 #include "section.h"
 
-/* Get irq code offsets from rom */
-int getIRQSections(FILE*, Section*);
+/**
+ * Get irq code offsets from rom.
+ * \param [in]  iRomFile Rom file.
+ * \param [out] iSectionArray Section array.
+ * \return 
+ *		0 if an error occured.
+ *		1 otherwise.
+ */
+int getIRQSections(FILE* iRomFile, Section* iSectionArray);
 
 #endif /* IRQ_H */
