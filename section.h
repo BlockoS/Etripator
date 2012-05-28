@@ -26,10 +26,10 @@
  **/
 typedef enum
 {
-	SECTION_OK = 0,                  /*< Success. */
-	SECTION_INVALID_PARAMETERS,      /*< At least one of the parameter has an invalid value. */
-	SECTION_PARSING_ERROR,           /*< Todo . */
-	SECTION_MEMORY_ISSUE             /*< Something went wrong with the memory. */
+	SECTION_OK = 0,                  /**< Success. */
+	SECTION_INVALID_PARAMETERS,      /**< At least one of the parameter has an invalid value. */
+	SECTION_PARSING_ERROR,           /**< Todo . */
+	SECTION_MEMORY_ISSUE             /**< Something went wrong with the memory. */
 } SECTION_ERR;
 
 /**
@@ -37,13 +37,13 @@ typedef enum
  * 	 This area can contain data or code.
  **/
 struct Section_ {
-	char     type;  /* type (defined below) */
-	char*    name;  /* name */
-	uint8_t  bank;  /* rom bank */
-	uint16_t org;   /* org */
-	off_t    start; /* start address (file offset in bytes) */
-	size_t   size;  /* section size */
-	uint8_t  id;    /* section id */
+	char     type;  /**< type (defined below) */
+	char*    name;  /**< name */
+	uint8_t  bank;  /**< rom bank */
+	uint16_t org;   /**< org */
+	off_t    start; /**< start address (file offset in bytes) */
+	size_t   size;  /**< section size */
+	uint8_t  id;    /**< section id */
 };
 typedef struct Section_ Section;
 
@@ -54,7 +54,11 @@ enum SectionType {
 };
 
 /**
- * Extract sections from a CFG file
+ * Extract sections from a CFG file.
+ * \param [in] iFilename ROM filename.
+ * \param [out] iSection Section array.
+ * \param [out] iSectionCount Number of succesfully parsed sections.
+ * \return SECTION_OK if the parsing was succesful. Otherwise \see SECTION_ERR for more informations.
  **/ 
 SECTION_ERR readSectionsFromCFG(char* iFileName, Section** iSection, size_t* iSectionCount);
 

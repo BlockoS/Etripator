@@ -311,14 +311,13 @@ static int validateCFGTuple(void *data, const char* key, const char* value)
 	return 0;
 }
 
-/*
- * \brief Extract sections from a CFG file
- *
- * \param iFileName     CFG file name
- * \param iSection      Section array (in/out)
- * \param iSectionCount Number of read sections (in/out)
- * \return SECTION_OK on success.
- */ 
+/**
+ * Extract sections from a CFG file.
+ * \param [in] iFilename ROM filename.
+ * \param [out] iSection Section array.
+ * \param [out] iSectionCount Number of succesfully parsed sections.
+ * \return SECTION_OK if the parsing was succesful. Otherwise \see SECTION_ERR for more informations.
+ **/ 
 SECTION_ERR readSectionsFromCFG(char* iFileName, Section** iSection, size_t* iSectionCount)
 {
 	struct CFGPayload payload;
