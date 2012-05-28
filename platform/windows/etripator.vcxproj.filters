@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\cfg.c" />
     <ClCompile Include="..\..\message.c" />
     <ClCompile Include="..\..\decode.c" />
+    <ClCompile Include="..\..\memory.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\irq.h" />
@@ -47,5 +48,6 @@
     </ClInclude>
     <ClInclude Include="..\..\message.h" />
     <ClInclude Include="..\..\decode.h" />
+    <ClInclude Include="..\..\memory.h" />
   </ItemGroup>
 </Project>

@@ -104,6 +104,7 @@
     <ClCompile Include="..\..\etripator.c" />
     <ClCompile Include="..\..\irq.c" />
     <ClCompile Include="..\..\labels.c" />
+    <ClCompile Include="..\..\memory.c" />
     <ClCompile Include="..\..\message.c" />
     <ClCompile Include="..\..\opcodes.c" />
     <ClCompile Include="..\..\options.c" />
@@ -117,6 +118,7 @@
     <ClInclude Include="..\..\decode.h" />
     <ClInclude Include="..\..\irq.h" />
     <ClInclude Include="..\..\labels.h" />
+    <ClInclude Include="..\..\memory.h" />
     <ClInclude Include="..\..\message.h" />
     <ClInclude Include="..\..\opcodes.h" />
     <ClInclude Include="..\..\options.h" />

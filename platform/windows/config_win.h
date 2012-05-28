@@ -43,6 +43,10 @@
 #include <limits.h>
 #include <ctype.h>
 
+#if defined(_MSC_VER) && !defined(__cplusplus)
+#define inline __forceinline
+#endif
+
 #ifdef ARCH_EXPORTS
 #define ARCH_API __declspec(dllexport)
 #else

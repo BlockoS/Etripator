@@ -20,7 +20,6 @@
 
 #include "config.h"
 #include "opcodes.h"
-#include "rbtree.h"
 
 /* Is the instruction a local jump ? */
 #define isLocalJump(i) \
