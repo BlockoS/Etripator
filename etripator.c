@@ -25,6 +25,8 @@
 #include "irq.h"
 #include "options.h"
 
+#include "appconfig.h"
+
 /*
   exit callback
  */
@@ -53,9 +55,21 @@ int main(int argc, char** argv)
 
   SectionProcessor processor;
 
+
+
+  AppConfig testConfig;
+
+
+
   atexit(exit_callback);
 
   PrintMsgOpenFile(NULL);
+
+
+
+	ParseAppConfig("test.cfg", &testConfig);
+
+
 
   /* Extract command line options */
   err = getCommandLineOptions(argc, argv, &cmdOptions);

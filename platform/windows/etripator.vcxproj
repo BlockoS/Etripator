@@ -99,31 +99,37 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\appconfig.c" />
     <ClCompile Include="..\..\cfg.c" />
     <ClCompile Include="..\..\cfgext.c" />
     <ClCompile Include="..\..\decode.c" />
     <ClCompile Include="..\..\etripator.c" />
+    <ClCompile Include="..\..\hashtable.c" />
     <ClCompile Include="..\..\irq.c" />
     <ClCompile Include="..\..\labels.c" />
     <ClCompile Include="..\..\memory.c" />
     <ClCompile Include="..\..\message.c" />
     <ClCompile Include="..\..\opcodes.c" />
     <ClCompile Include="..\..\options.c" />
+    <ClCompile Include="..\..\random.c" />
     <ClCompile Include="..\..\section.c" />
     <ClCompile Include="getopt.c" />
     <ClCompile Include="getopt1.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\appconfig.h" />
     <ClInclude Include="..\..\cfg.h" />
     <ClInclude Include="..\..\cfgext.h" />
     <ClInclude Include="..\..\config.h" />
     <ClInclude Include="..\..\decode.h" />
+    <ClInclude Include="..\..\hashtable.h" />
     <ClInclude Include="..\..\irq.h" />
     <ClInclude Include="..\..\labels.h" />
     <ClInclude Include="..\..\memory.h" />
     <ClInclude Include="..\..\message.h" />
     <ClInclude Include="..\..\opcodes.h" />
     <ClInclude Include="..\..\options.h" />
+    <ClInclude Include="..\..\random.h" />
     <ClInclude Include="..\..\section.h" />
     <ClInclude Include="config_win.h" />
     <ClInclude Include="getopt_win.h" />

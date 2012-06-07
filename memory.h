@@ -25,10 +25,11 @@
 /**
  * Memory layout structure.
  */
-struct Memory
+struct Memory_
 {
 	uint8_t mpr[PCE_MPR_COUNT];
 };
+typedef struct Memory_ Memory;
 
 /**
  * Compute 8kB offset from logical address.
@@ -56,7 +57,7 @@ inline uint8_t GetMPRId(uint16_t addr)
  * \param [in] addr Logical 16 bits address.
  * \return Bank number.
  */
-inline uint8_t GetBank(struct Memory* mem, uint16_t addr)
+inline uint8_t GetBank(Memory* mem, uint16_t addr)
 {
 	return 	mem->mpr[GetMPRId(addr)];
 }
@@ -67,7 +68,7 @@ inline uint8_t GetBank(struct Memory* mem, uint16_t addr)
  * \param [in] addr Logical 16 bits address.
  * \return 21 bits long physical address.
  */
-inline uint32_t GetPhysicalAddress(struct Memory* mem, uint16_t addr)
+inline uint32_t GetPhysicalAddress(Memory* mem, uint16_t addr)
 {
 	return (GetBank(mem, addr) << 13) | GetOffset(addr);
 }

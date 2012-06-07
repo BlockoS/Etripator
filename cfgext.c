@@ -13,16 +13,16 @@
  */
 static int payloadBeginCFGSection(void *data, const char* sectionName)
 {
-	struct CFGParser *parser = (struct CFGParser*)data;
+	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	size_t i;
 
-	parser->current = NULL;
-	for(i=0; i<parser->count; ++i)
+	payloadExt->current = NULL;
+	for(i=0; i<payloadExt->count; ++i)
 	{
-		if(strcmp(sectionName, parser->section[i].name) == 0)
+		if(strcmp(sectionName, payloadExt->section[i].name) == 0)
 		{
-			parser->current = parser->section + i;
-			return parser->current->beginSectionCallback(parser->data, sectionName);
+			payloadExt->current = payloadExt->section + i;
+			return payloadExt->current->beginSectionCallback(payloadExt->data, sectionName);
 		}
 	}
 
@@ -45,10 +45,10 @@ static int payloadEndCFGSection(void *data)
 {
 	if(data != NULL)
 	{
-		struct CFGParser *parser = (struct CFGParser*)data;
-		if(parser->current == NULL)
+		CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
+		if(payloadExt->current != NULL)
 		{
-			return parser->current->endSectionCallback(parser->data);
+			return payloadExt->current->endSectionCallback(payloadExt->data);
 		}
 	}
 	return 0;
@@ -68,15 +68,15 @@ static int payloadEndCFGSection(void *data)
  */
 static int payloadValidateCFGTuple(void *data, const char* key, const char* value)
 {
-	struct CFGParser *parser = (struct CFGParser*)data;
-	struct CFGSectionParser *current = parser->current;
+	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
+	struct CFGSectionParser *current = payloadExt->current;
 	size_t i;
 
 	for(i=0; i<current->keyCount; ++i)
 	{
 		if(strcmp(current->keyValueValidator[i].key, key) == 0)
 		{
-			return current->keyValueValidator[i].validate(parser->data, key, value);
+			return current->keyValueValidator[i].validate(payloadExt->data, key, value);
 		}
 	}
 
@@ -85,15 +85,14 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 
 /**
  * Initialize CFG/Ini parser payload.
- * \param [in]  parser CFG/Ini parser to use.
- * \param [out] payload CFG/Ini payload to be initialized.
+ * \param [out]  parser CFG/Ini Advanced parser to use.
  */
-void SetupCFGParserPayload(struct CFGParser* parser, struct CFGPayload *payload)
+void SetupCFGParserPayload(CFGPayloadExt* parser)
 {
-	payload->line = 0;
-	payload->data = parser;
+	parser->payload.line = 0;
+	parser->payload.data = parser;
 
-	payload->beginSectionCallback    = payloadBeginCFGSection;
-	payload->endSectionCallback      = payloadEndCFGSection;
-	payload->keyValueCallback        = payloadValidateCFGTuple;
+	parser->payload.beginSectionCallback = payloadBeginCFGSection;
+	parser->payload.endSectionCallback   = payloadEndCFGSection;
+	parser->payload.keyValueCallback     = payloadValidateCFGTuple;
 }

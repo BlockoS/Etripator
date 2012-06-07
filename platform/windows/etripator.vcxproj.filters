@@ -26,6 +26,9 @@
     <ClCompile Include="..\..\decode.c" />
     <ClCompile Include="..\..\memory.c" />
     <ClCompile Include="..\..\cfgext.c" />
+    <ClCompile Include="..\..\appconfig.c" />
+    <ClCompile Include="..\..\hashtable.c" />
+    <ClCompile Include="..\..\random.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\irq.h" />
@@ -51,5 +54,8 @@
     <ClInclude Include="..\..\decode.h" />
     <ClInclude Include="..\..\memory.h" />
     <ClInclude Include="..\..\cfgext.h" />
+    <ClInclude Include="..\..\appconfig.h" />
+    <ClInclude Include="..\..\hashtable.h" />
+    <ClInclude Include="..\..\random.h" />
   </ItemGroup>
 </Project>

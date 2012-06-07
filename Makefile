@@ -20,7 +20,7 @@ OBJDIR := $(OUTDIR)/obj
 
 LIBS   :=  -lm
 
-EXE_SRC := message.c decode.c cfg.c section.c opcodes.c labels.c irq.c options.c etripator.c
+EXE_SRC := message.c decode.c hashtable.c random.c cfg.c cfgext.c memory.c section.c appconfig.c opcodes.c labels.c irq.c options.c etripator.c
 OBJS    := $(EXE_SRC:.c=.o)
 EXE_OBJ := $(addprefix $(OBJDIR)/, $(OBJS))
 EXE     := $(OUTDIR)/etripator

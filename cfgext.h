@@ -44,21 +44,22 @@ struct CFGSectionParser
 };
 
 /**
- * Global CFG/Ini parser.
+ * Advanced payload structure for CFG/Ini file parser.
  */
-struct CFGParser
+struct CFGPayloadExt_
 {
+	struct CFGPayload        payload; /**< Standard payload structure. */
 	struct CFGSectionParser *section; /**< Section parser array. */
 	size_t                   count;   /**< Section count. */
 	struct CFGSectionParser *current; /**< Current section parser. */
-	void *data;                       /**< Use data. */
+	void                    *data;    /**< User data. */
 };
+typedef struct CFGPayloadExt_ CFGPayloadExt;
 
 /**
  * Initialize CFG/Ini parser payload.
- * \param [in]  parser CFG/Ini parser to use.
- * \param [out] payload CFG/Ini payload to be initialized.
+ * \param [out]  parser CFG/Ini Advanced parser to use.
  */
-void SetupCFGParserPayload(struct CFGParser* parser, struct CFGPayload *payload);
+void SetupCFGParserPayload(CFGPayloadExt* parser);
 
 #endif // ETRIPATOR_CFG_EXT_H

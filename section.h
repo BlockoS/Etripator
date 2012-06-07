@@ -36,7 +36,8 @@ typedef enum
  *   Define a ROM area.
  * 	 This area can contain data or code.
  **/
-struct Section_ {
+struct Section_
+{
 	char     type;  /**< type (defined below) */
 	char*    name;  /**< name */
 	uint8_t  bank;  /**< rom bank */
