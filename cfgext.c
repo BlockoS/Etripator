@@ -30,7 +30,7 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 		if(strcmp(sectionName, payloadExt->section[i].name) == 0)
 		{
 			payloadExt->current = payloadExt->section + i;
-
+			
 			if(payloadExt->current->keyCount > payloadExt->flagSize)
 			{
 				uint8_t *tmp = (uint8_t*)realloc(payloadExt->flag, payloadExt->current->keyCount);
@@ -73,16 +73,23 @@ static int payloadEndCFGSection(void *data)
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	struct CFGSectionParser *current = payloadExt->current;
 	size_t last = current->data.count;
-	size_t i;
+	size_t i, keyFound;
 	
 	/* Check flags */
-	for(i=0; i<current->keyCount; i++)
+	for(i=0, keyFound=0; i<current->keyCount; i++)
 	{
 		/* If the payload flag is set, this means that the flag is mandatory. */
 		if(payloadExt->flag[i] && (current->flag[i] == 0))
 		{
 			return 0;
 		}
+		keyFound += payloadExt->flag[i];
+	}
+
+	/* Check for empty section */
+	if(keyFound == 0)
+	{
+		return 0;
 	}
 
 	/* Check id */
