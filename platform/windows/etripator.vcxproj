@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\appconfig.c" />
+    <ClCompile Include="..\..\array.c" />
     <ClCompile Include="..\..\cfg.c" />
     <ClCompile Include="..\..\cfgext.c" />
     <ClCompile Include="..\..\decode.c" />
@@ -118,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\appconfig.h" />
+    <ClInclude Include="..\..\array.h" />
     <ClInclude Include="..\..\cfg.h" />
     <ClInclude Include="..\..\cfgext.h" />
     <ClInclude Include="..\..\config.h" />

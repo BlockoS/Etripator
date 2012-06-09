@@ -20,6 +20,8 @@
 
 #include "config.h"
 #include "cfg.h"
+#include "array.h"
+#include "hashtable.h"
 
 /**
  * \brief CFG key parsing helper.
@@ -31,16 +33,45 @@ typedef struct
 } CFGKeyValidator;
 
 /**
+ * \brief Initialize element callback.
+ * This callback will be called when the parser encounters a new section block.
+ * \param [in] data user provided data 
+ * \return 
+ *     <=0 failure
+ *     >0 success 
+ */
+typedef int (*CFGExtInitializeElementProc) (void *data);
+
+/**
+ * \brief Copy element.
+ * This callback will be called when the current section is over (ie at end of file or when a new section starts).
+ * \param [out] dst Pointer to destination data.
+ * \param [in]  src Pointer to source data.
+ * \return 
+ *     <=0 failure
+ *     >0 success 
+ */
+typedef int (*CFGExtCopyElementProc) (void *dst, void *src);
+
+/**
  * CFG/Ini section parser.
  */
 struct CFGSectionParser
 {
-	const char*      name;              /**< Section name. */
-	CFGKeyValidator* keyValueValidator; /**< Key/Value tuple validators. */
+	const char      *name;              /**< Section name. */
+	CFGKeyValidator *keyValueValidator; /**< Key/Value tuple validators. */
+	uint8_t         *flag;              /**< Key/Value flag. Tells if a given key is mandatory. */
 	size_t           keyCount;          /**< Key count. */
 	
-	CFGBeginSectionProc beginSectionCallback; /**< Section parsing start callback. */
-	CFGEndSectionProc   endSectionCallback;   /**< Section parsing end callback. */
+	// [todo] Separate section data from parsing.
+
+	void            *element;           /**< Temporary element. */
+	
+	Array            data;              /**< Array containing parsed elements. */
+	SkipList         dict;              /**< Hashtable containg the element index in the data array. */
+
+	CFGExtInitializeElementProc initializeElement; /**< Initialize/reset temporary element. */
+	CFGExtCopyElementProc       copyElement;       /**< Copy element to element array. */
 };
 
 /**
@@ -48,11 +79,14 @@ struct CFGSectionParser
  */
 struct CFGPayloadExt_
 {
-	struct CFGPayload        payload; /**< Standard payload structure. */
-	struct CFGSectionParser *section; /**< Section parser array. */
-	size_t                   count;   /**< Section count. */
-	struct CFGSectionParser *current; /**< Current section parser. */
-	void                    *data;    /**< User data. */
+	struct CFGPayload        payload;   /**< Standard payload structure. */
+	struct CFGSectionParser *section;   /**< Section parser array. */
+	size_t                   count;     /**< Section count. */
+	struct CFGSectionParser *current;   /**< Current section parser. */
+	char                    *id;		/**< Current element id. */
+	size_t                   idSize;    /**< Id string buffer size. */
+	uint8_t                 *flag;      /**< Current key/value flags. */
+	size_t                   flagSize;  /**< Key/Value buffer size. */
 };
 typedef struct CFGPayloadExt_ CFGPayloadExt;
 
@@ -61,5 +95,22 @@ typedef struct CFGPayloadExt_ CFGPayloadExt;
  * \param [out]  parser CFG/Ini Advanced parser to use.
  */
 void SetupCFGParserPayload(CFGPayloadExt* parser);
+
+// [todo] Create payloadExt
+// [todo] Destroy payloadExt
+
+
+#if 0
+	/* Setup section array and dictionary */
+	arErr = ArrayCreate(&config->data[1], sizeof(Section));
+	if(arErr != ARRAY_OK)
+	{
+		return 0;
+	}
+	if(SLCreate(&config->dict[1]) != HASHTABLE_OK)
+	{
+		return 0;
+	}
+#endif
 
 #endif // ETRIPATOR_CFG_EXT_H

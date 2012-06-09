@@ -1,5 +1,7 @@
 #include "cfgext.h"
 
+// [todo] Add messages.
+
 /**
  * \brief Section start callback.
  * This callback will be called when the parser encounters a new section block.
@@ -15,6 +17,7 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 {
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	size_t i;
+	int err;
 
 	payloadExt->current = NULL;
 	for(i=0; i<payloadExt->count; ++i)
@@ -22,7 +25,24 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 		if(strcmp(sectionName, payloadExt->section[i].name) == 0)
 		{
 			payloadExt->current = payloadExt->section + i;
-			return payloadExt->current->beginSectionCallback(payloadExt->data, sectionName);
+
+			if(payloadExt->current->keyCount > payloadExt->flagSize)
+			{
+				uint8_t *tmp = (uint8_t*)realloc(payloadExt->flag, payloadExt->current->keyCount);
+				if(tmp == NULL)
+				{
+					return 0;
+				}
+				payloadExt->flag     = tmp;
+				payloadExt->flagSize = payloadExt->current->keyCount;
+			}
+			memcpy(payloadExt->flag, 0, payloadExt->flagSize);
+
+			err =  payloadExt->current->initializeElement(payloadExt->current->element);
+			if(!err)
+			{
+				return 0;
+			}
 		}
 	}
 
@@ -43,15 +63,30 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
  */
 static int payloadEndCFGSection(void *data)
 {
-	if(data != NULL)
+	ARRAY_ERR aErr;
+	HASHTABLE_ERROR hErr;
+	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
+	struct CFGSectionParser *current = payloadExt->current;
+	size_t last = current->data.count;
+
+	// [todo] Check flags
+
+	/* Commit current memory layout */
+	aErr = ArrayPush(&current->data, (uint8_t*)current->element);
+	if(aErr != ARRAY_OK)
 	{
-		CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
-		if(payloadExt->current != NULL)
-		{
-			return payloadExt->current->endSectionCallback(payloadExt->data);
-		}
+		return 0;
 	}
-	return 0;
+
+	/* Add id to hashtable */
+	hErr = SLAdd(&current->dict, payloadExt->id, strlen(payloadExt->id)+1, last);
+	if(hErr != HASHTABLE_OK)
+	{
+		return 0;
+	}
+
+	/* Copy temporary element into the array. */
+	return current->copyElement(ArrayAt(&current->data, last), data);
 }
 
 /**
@@ -70,13 +105,46 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 {
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	struct CFGSectionParser *current = payloadExt->current;
-	size_t i;
 
-	for(i=0; i<current->keyCount; ++i)
+	/* Id key receives a special treatment. */
+	if(strcmp("id", key) == 0)
 	{
-		if(strcmp(current->keyValueValidator[i].key, key) == 0)
+		uintptr_t dummy;
+		size_t idLen = strlen(value)+1;
+		HASHTABLE_ERROR err = SLFind(&current->dict, value, idLen, &dummy);
+		if(err != HASHTABLE_UNKNOWN_ID)
 		{
-			return current->keyValueValidator[i].validate(payloadExt->data, key, value);
+			/* There is already an entry for this id! */
+			return 0;
+		}
+
+		/* Save id for commit */
+		if(idLen > payloadExt->idSize)
+		{
+			char *tmp = (char*)realloc(payloadExt->id, idLen);
+			if(tmp == 0)
+				return 0;
+			payloadExt->id     = tmp;
+			payloadExt->idSize = idLen;
+		}
+		memcpy(payloadExt->id, value, idLen);
+
+		return 1;
+	}
+	else
+	{
+		size_t i;
+		for(i=0; i<current->keyCount; ++i)
+		{
+			if(strcmp(current->keyValueValidator[i].key, key) == 0)
+			{
+				if(payloadExt->flag[i])
+				{
+					return 0;
+				}
+				++payloadExt->flag[i];
+				return current->keyValueValidator[i].validate(current->element, key, value);
+			}
 		}
 	}
 

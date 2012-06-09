@@ -88,4 +88,12 @@ ARRAY_ERR ArrayPop(Array* array);
  */
 void ArrayReset(Array* array);
 
+/**
+ * Get element at a given index.
+ * \param [in] array Array.
+ * \param [in] index Element index.
+ * \return A pointer to the element or NULL if the index is invalid.
+ **/
+void* ArrayAt(Array* array, size_t index);
+
 #endif // ARRAY_H

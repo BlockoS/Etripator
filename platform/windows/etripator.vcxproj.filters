@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\appconfig.c" />
     <ClCompile Include="..\..\hashtable.c" />
     <ClCompile Include="..\..\random.c" />
+    <ClCompile Include="..\..\array.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\irq.h" />
@@ -57,5 +58,6 @@
     <ClInclude Include="..\..\appconfig.h" />
     <ClInclude Include="..\..\hashtable.h" />
     <ClInclude Include="..\..\random.h" />
+    <ClInclude Include="..\..\array.h" />
   </ItemGroup>
 </Project>

@@ -31,7 +31,7 @@ static int validateMPR (void *data, const char* key, const char* value)
 	unsigned int bank;
 	unsigned int id;
 
-	AppConfig *config = (AppConfig*)data;
+	Memory *memoryLayout = (Memory*)data;
 
 	start = value;
 	end   = NULL;
@@ -44,124 +44,102 @@ static int validateMPR (void *data, const char* key, const char* value)
 		return 0;
 	}
 
-	config->tmpMemoryLayout.mpr[id] = bank;
+	memoryLayout->mpr[id] = bank;
 
+	return 1; 
+}
+
+/**
+ * Reset memory layout.
+ * \param [in] data Pointer to memory layout.
+ * \return always 1.
+ */
+static int ResetMemoryLayout (void *data)
+{
+	Memory *memoryLayout = (Memory*)data;
+	memset(memoryLayout->mpr, 0, PCE_MPR_COUNT);
+	memoryLayout->mpr[0] = 0xff;
+	memoryLayout->mpr[1] = 0xf8;
 	return 1;
 }
 
 /**
- * Validate memory section id.
- * \see CFGKeyValueProc
+ * Copy memory layout into another.
+ * \param [out] dst Destination.
+ * \param [in]  src Source.
+ * \return always 1.
  */
-static int validateId (void *data, const char* key, const char* value)
+static int CopyMemoryLayout(void *dst, void *src)
 {
-	// [todo] loop through the memory layout array and check id
-	return 1;
-}
-
-/**
- *
- */
-static int beginMemorySection (void *data, const char* sectionName)
-{
-	AppConfig *config = (AppConfig*)data;
-	
-	/* Reset temp memory layout */
-	memset(config->tmpMemoryLayout.mpr, 0, PCE_MPR_COUNT);
-	config->tmpMemoryLayout.mpr[0] = 0xff;
-	config->tmpMemoryLayout.mpr[1] = 0xf8;
-
-	return 1;
-}
-
-/**
- *
- */
-static int endMemorySection(void *data)
-{
-	AppConfig *config = (AppConfig*)data;
-	size_t currentMemoryLayout = config->memoryLayoutCount;
-	++config->memoryLayoutCount;
-
-	/* Expand memory layout array */
-	if(config->memoryLayoutCapacity <= config->memoryLayoutCount)
-	{
-		Memory *ptr;
-		ptr = (Memory*)realloc(config->memoryLayout, config->memoryLayoutCapacity*2*sizeof(Memory));
-		if(ptr == NULL)
-		{
-			// [todo] error msg
-			return 0;
-		}
-		config->memoryLayoutCapacity *= 2;
-		config->memoryLayout = ptr;
-	}
-
-	/* Commit current memory layout */
-	memcpy(config->memoryLayout[currentMemoryLayout].mpr, config->tmpMemoryLayout.mpr, PCE_MPR_COUNT);
-	// [todo] Id
-
+	memcpy(dst, src, sizeof(Memory));
 	return 1;
 }
 
 /** MPR key validator */
-static CFGKeyValidator g_memoryMprKeyValidator[PCE_MPR_COUNT+1] = 
+static CFGKeyValidator g_memoryKeyValidator[PCE_MPR_COUNT] = 
 {
 	{"mpr0", validateMPR}, {"mpr1", validateMPR},
 	{"mpr2", validateMPR}, {"mpr3", validateMPR},
 	{"mpr4", validateMPR}, {"mpr5", validateMPR},
-	{"mpr6", validateMPR}, {"mpr7", validateMPR},
-	{"id",   validateId}
+	{"mpr6", validateMPR}, {"mpr7", validateMPR}
 };
 
-/** Memory section parser */
-static struct CFGSectionParser g_memoryParser =
-{
-	"memory", 
-	g_memoryMprKeyValidator,
-	PCE_MPR_COUNT+1,
-	beginMemorySection, endMemorySection
-};
 
 /**
- *
- * \param [in] cfgFilename
- * \param [out] config
- * \return 
+ * Reset section.
+ * \param [in] data Pointer to section.
+ * \return always 1.
  */
-int ParseAppConfig(const char* cfgFilename, AppConfig *config)
+static int ResetMemory (void *data)
+{
+	Section *section = (Section*)data;
+	section->bank  = 0;
+	section->id    = 0;
+	section->org   = 0;
+	section->size  = 0;
+	section->start = 0;
+	section->type  = 0;
+	return 1;
+}
+
+/**
+ * Copy section into another.
+ * \param [out] dst Destination.
+ * \param [in]  src Source.
+ * \return always 1.
+ */
+static int CopySection(void *dst, void *src)
+{
+	memcpy(dst, src, sizeof(Section));
+	return 1;
+}
+
+/** Code key validator */
+/*
+static CFGKeyValidator g_codeKeyValidator[6] = 
+{
+	{ "bank",   validateBank},
+	{ "org",    validateOrg},
+	{ "offset", validateOffset},
+	{ "size",   validateSize},
+	{ "prefix", validatePrefix}
+};
+*/
+
+#if 0
+int ParseAppConfig(const char* cfgFilename)
 {
 	CFG_ERR cfgErr;
 	CFGPayloadExt payloadExt;
 
-	// todo : reset memory layout function
-	memset(config->tmpMemoryLayout.mpr, 0, PCE_MPR_COUNT);
-	config->tmpMemoryLayout.mpr[0] = 0xff;
-	config->tmpMemoryLayout.mpr[1] = 0xf8;
+	Memory   tmpMemoryLayout;
+	Section  tmpSection;
 
-	config->memoryLayout         = NULL;
-	config->memoryLayoutCount    = 0;
-	config->memoryLayoutCapacity = 1;
+	// [todo] Setup section parser and payloadExt
 
-	// todo : reset section function
-	config->tmpSection.bank  = 0;
-	config->tmpSection.id    = 0;
-	config->tmpSection.org   = 0;
-	config->tmpSection.size  = 0;
-	config->tmpSection.start = 0;
-	config->tmpSection.type  = 0;
-
-	config->section         = NULL;
-	config->sectionCount    = 0;
-	config->sectionCapacity = 1;
-
-	// todo
-	payloadExt.count   = 1;
-	payloadExt.section = &g_memoryParser;
-	
 	SetupCFGParserPayload(&payloadExt);
 
-	payloadExt.data = config;
+	/* Parse file */
 	cfgErr = ParseCFG(cfgFilename, &(payloadExt.payload));
 	if(cfgErr != CFG_OK)
 	{
@@ -171,4 +149,4 @@ int ParseAppConfig(const char* cfgFilename, AppConfig *config)
 
 	return 1;
 }
-
+#endif

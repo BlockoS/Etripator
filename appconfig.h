@@ -21,38 +21,9 @@
 #include "cfgext.h"
 #include "memory.h"
 #include "section.h"
+#include "array.h"
+#include "hashtable.h"
 
-/**
- *
- */
-struct AppConfig_
-{
-	// [todo] use array.h macro?
-	// [todo] use hashtable for id
-	Memory   tmpMemoryLayout;      /**< */
-	Memory  *memoryLayout;         /**< */
-	size_t   memoryLayoutCount;    /**< */
-	size_t   memoryLayoutCapacity; /**< */
-
-	Section  tmpSection;      /**< */
-	Section *section;         /**< */
-	size_t   sectionCount;    /**< */
-	size_t   sectionCapacity; /**< */
-};
-typedef struct AppConfig_ AppConfig;
-
-/**
- *
- * \param [in] cfgFilename
- * \param [out] config
- * \return 
- */
-int ParseAppConfig(const char* cfgFilename, AppConfig *config);
-
-/**
- *
- * \param [in/out] config
- */
-void DestroyAppConfig(AppConfig *config);
+// [todo]
 
 #endif // APP_CONFIG_H

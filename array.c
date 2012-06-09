@@ -102,3 +102,18 @@ void ArrayReset(Array* array)
 {
 	array->count = 0;
 }
+
+/**
+ * Get element at a given index.
+ * \param [in] array Array.
+ * \param [in] index Element index.
+ * \return A pointer to the element or NULL if the index is invalid.
+ **/
+void* ArrayAt(Array* array, size_t index)
+{
+	if(index >= array->count)
+	{
+		return NULL;
+	}
+	return array->buffer + (index * array->elementSize);
+}
