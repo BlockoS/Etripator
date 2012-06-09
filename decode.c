@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with Etripator.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "config.h"
 #include "message.h"
 #include "decode.h"
 
@@ -82,6 +83,7 @@ int processDataSection(SectionProcessor* iProcessor)
 	int j;
 	char eor = 0;
 	off_t fileEnd;
+	size_t nRead;
 	
 	fileEnd = iProcessor->processed->start + iProcessor->processed->size;
 	
@@ -92,8 +94,12 @@ int processDataSection(SectionProcessor* iProcessor)
 		while(!eor) {
 			fprintf(iProcessor->out, "  .db ");
 			/* Read data */
-			fread(data, 1, 8, iProcessor->in);
-
+			nRead = fread(data, 1, 8, iProcessor->in);
+			if(nRead != 8)
+			{
+				return 0;
+			}
+			
 			j=0;
 			while(1)
 			{
@@ -155,7 +161,8 @@ int getLabels(SectionProcessor* iProcessor)
 	unsigned char inst, data[6], eor;
 	uint16_t labelOffset, offset;
 	int delta,i=0;
-
+	size_t nRead;
+	
 	LabelRepository *repository = &(iProcessor->labelRepository);
 	Section *section = iProcessor->processed;
 	FILE    *in      = iProcessor->in;
@@ -180,12 +187,20 @@ int getLabels(SectionProcessor* iProcessor)
 	while(!eor)
 	{
 		/* Read instruction */
-		fread(&inst, 1, 1, iProcessor->in);
-
+		nRead = fread(&inst, 1, 1, iProcessor->in);
+		if(nRead != 1)
+		{
+			return 0;
+		}
+		
 		/* Read data */
 		if(pce_opcode[inst].size > 1)
 		{
-			fread(data, 1, pce_opcode[inst].size-1, in);
+			nRead = fread(data, 1, pce_opcode[inst].size-1, in);
+			if(nRead != (size_t)(pce_opcode[inst].size-1))
+			{
+				return 0;
+			}
 		}
 		
 		nBytesProcessed += pce_opcode[inst].size;
@@ -271,13 +286,18 @@ char processOpcode(SectionProcessor* iProcessor) {
 	uint8_t inst, data[6], isJump, page;
 	char line[MAX_CHAR_PER_LINE], eor, *ptr;
 	uint16_t offset, nextOrgOffset;
-
+	size_t nRead;
+	
 	eor = 0;
 	ptr = line;
 
 	/* Opcode */
-	fread(&inst, 1, 1, iProcessor->in);
-
+	nRead = fread(&inst, 1, 1, iProcessor->in);
+	if(nRead != 1)
+	{
+		return 0;
+	}
+	
 	/* Get label index */
 	getLabelIndex(iProcessor);
 
@@ -318,7 +338,11 @@ char processOpcode(SectionProcessor* iProcessor) {
 	/* Data */
 	if(pce_opcode[inst].size > 1)
 	{
-		fread(data, 1, pce_opcode[inst].size-1, iProcessor->in);
+		nRead = fread(data, 1, pce_opcode[inst].size-1, iProcessor->in);
+		if(nRead != (size_t)(pce_opcode[inst].size-1))
+		{
+			return 0;
+		}
 	}
 
 	iProcessor->orgOffset   = nextOrgOffset;

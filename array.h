@@ -18,108 +18,74 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-// Todo: example
+#include "config.h"
 
 /**
- * \brief Array errors
+ * Array errors
  */
 typedef enum
 {
-	ARRAY_OK = 0,          /*< Success. */
-	ARRAY_MEMALLOC_ERROR,  /*< Unable to allocate memory. */
-	ARRAY_EMPTY,           /*< The array is empty. */
-	ARRAY_UNKNOWN_ERROR    /*< Unknown error. \note: must be the last one. */
+	ARRAY_OK = 0,          /**< Success. */
+	ARRAY_MEMALLOC_ERROR,  /**< Unable to allocate memory. */
+	ARRAY_EMPTY,           /**< The array is empty. */
+	ARRAY_UNKNOWN_ERROR    /**< Unknown error. \note: must be the last one. */
 } ARRAY_ERR;
 
 /**
- * \brief Declares an array structure along create/destroy/push/destroy functions.
+ * Base array structure
  */
-#define ARRAY_DECLARE(type) \
-typedef struct \
-{ \
-type *buffer; \
-size_t capacity; \
-size_t size; \
-} type##_array; \
-ARRAY_ERR type##_array_create(type##_array* container, size_t size); \
-void type##_array_destroy(type##_array* container); \
-ARRAY_ERR type##_array_grow(type##_array *container, size_t size); \
-ARRAY_ERR type##_array_push(type##_array *container, type* element); \
-ARRAY_ERR type##_array_pop(type##_array *container); \
-void type##_array_reset(type##_array *container); \
-
+struct Array_
+{
+	uint8_t *buffer;      /**< Data buffeR. */
+	size_t    elementSize; /**< Element size. */
+	size_t    count;       /**< Element count. */	
+	size_t    capacity;    /**< Buffer capacity in bytes. */
+};
+typedef struct Array_ Array;
 
 /**
- * \brief Helper macro for declaring an array variable.
+ * Create and initialize array structure.
+ * \param [out] array Array to be initialized.
+ * \param [in] elmntSize Element size.
+ * \return ARRAY_OK upon success.
  */
-#define ARRAY(type) type##_array
+ARRAY_ERR ArrayCreate(Array* array, size_t elmntSize);
+ 
 /**
- * \brief Helper macro for calling an array function.
+ * Release array memory.
+ * \param [in] array Array to be destroyed.
  */
-#define ARRAY_FUNC(type, func) type##_array_##func
+void ArrayDestroy(Array* array);
+ 
+/**
+ * Expand buffer storage capacity.
+ * \param [out] array Array
+ * \param [in] count Number of elements to add to storage.
+ * \return ARRAY_OK upon success.
+ */
+ARRAY_ERR ArrayGrow(Array* array, size_t count);
 
 /**
- * \brief Array functions definition.
+ * Add an element at the end of the array.
+ * \param [out] array Array
+ * \param [in] elmnt Element to add at the end of the buffer
+ * \return ARRAY_OK upon success.
  */
-#define ARRAY_DEFINE(type) \
-ARRAY_ERR type##_array_create(type##_array* container, size_t size) \
-{ \
-	container->buffer = NULL; \
-	container->capacity = 0; \
-	container->size = 0; \
-	return type##_array_grow(container, size); \
-} \
-\
-void type##_array_destroy(type##_array* container) \
-{ \
-	if(container->buffer != NULL) \
-	{ \
-		free(container->buffer); \
-		container->buffer = NULL; \
-	} \
-	container->capacity = container->size = 0; \
-} \
-\
-ARRAY_ERR type##_array_grow(type##_array *container, size_t size) \
-{ \
-	size_t capacity = container->capacity + size; \
-	type* tmp; \
-	tmp = (type*)realloc(container->buffer, capacity*sizeof(type)); \
-	if(tmp == NULL) \
-	{ \
-		return ARRAY_MEMALLOC_ERROR; \
-	} \
-	container->capacity = capacity; \
-	container->buffer = tmp; \
-	return ARRAY_OK; \
-} \
-\
-ARRAY_ERR type##_array_push(type##_array *container, type* element) \
-{ \
-	container->size++; \
-	if(container->size >= container->capacity) \
-	{ \
-		ARRAY_ERR err = type ## _array_grow(container, container->capacity); \
-		if( err != ARRAY_OK ) \
-		{ \
-			return err; \
-		} \
-	} \
-	memcpy(container->buffer+container->size-1, element, sizeof(type)); \
-	return ARRAY_OK; \
-} \
-ARRAY_ERR type##_array_pop(type##_array *container) \
-{ \
-	if(!container->size) \
-	{ \
-		return ARRAY_EMPTY; \
-	} \
-	--container->size; \
-	return ARRAY_OK; \
-} \
-void type##_array_reset(type##_array *container) \
-{ \
-	container->size = 0; \
-} \
+ARRAY_ERR ArrayPush(Array* array, uint8_t *elmnt);
+ 
+/**
+ * Remove last element.
+ * \param [out] array Array
+ * \return ARRAY_OK upon success.
+ */
+ARRAY_ERR ArrayPop(Array* array);
+ 
+/**
+ * Flush array.
+ * \note This will not release storage memory. It will just release
+ * the number of elements stored.
+ * \param [out] array Array
+ */
+void ArrayReset(Array* array);
 
 #endif // ARRAY_H

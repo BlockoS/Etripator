@@ -110,9 +110,10 @@ static SkipListNode* SLCreateNode(int level, const char* key, size_t keyLen, uin
  * \brief Create/Initialize skip list.
  *
  * \param list  Skip list to initialize.
- * \return 0 if an error occured, 1 on success.
+ * \return HASHTABLE_OK if the skip list was successfully created.
+ *         HASHTABLE_MEMORY_ISSUE if an error occured.
  */
-int SLCreate(SkipList* list)
+HASHTABLE_ERROR SLCreate(SkipList* list)
 {
 	list->maxLevel = MAX_LEVEL;
 	list->level    = 0;
@@ -120,9 +121,9 @@ int SLCreate(SkipList* list)
 	list->head = SLCreateNode(list->maxLevel, " ", 2, 0);
 	if(list->head == NULL)
 	{
-		return 0;
+		return HASHTABLE_MEMORY_ISSUE;
 	}
-	return 1;
+	return HASHTABLE_OK;
 }
 
 /**
@@ -153,9 +154,11 @@ void SLDestroy(SkipList* list)
  * \param key    Hash key.
  * \param keyLen Length of the hash key.
  * \param value  Value.
- * \return 0 if an error occured, 1 on success.
+ * \return HASHTABLE_OK if the entry was successfully added.
+ *         HASHTABLE_ID_FOUND if there is already an entry associated to the given key.
+ *         HASHTABLE_MEMORY_ISSUE if the new entry memory could not be allocated.
  */
-int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
+HASHTABLE_ERROR SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
 {
 	SkipListNode *update[MAX_LEVEL];
 	SkipListNode *current = list->head, *node;
@@ -177,7 +180,7 @@ int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
 
 	if((current->next[0] != NULL) && (current->next[0]->hash == hash))
 	{
-		return 0;
+		return HASHTABLE_ID_FOUND;
 	}
 
 	level = RandomLevel();
@@ -190,7 +193,7 @@ int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
 	node  = SLCreateNode(level, key, keyLen, value);
 	if(node == NULL)
 	{
-		return 0;
+		return HASHTABLE_MEMORY_ISSUE;
 	}
 	node->hash = hash;
 	
@@ -200,7 +203,7 @@ int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
 		update[i]->next[i] = node;
 	}
 
-	return 1;
+	return HASHTABLE_OK;
 }
 
 /**
@@ -210,9 +213,10 @@ int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value)
  * \param key    Hash key of the element to be deleted.
  * \param keyLen Length of the hash key.
  * \param result Retrieved value.
- * \return 0 if the element was not found, 1 if the element was successfully deleted.
+ * \return HASHTABLE_OK if the element was successfully deleted.
+ *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-int SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value)
+HASHTABLE_ERROR SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value)
 {
 	SkipListNode *update[MAX_LEVEL];
 	SkipListNode *current = list->head;
@@ -250,11 +254,11 @@ int SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value)
 		for(; (list->level) && (list->head->next[list->level] == NULL); list->level--)
 		{}
 
-		return 1;
+		return HASHTABLE_OK;
 	}
 
 	*value = 0;
-	return 0;
+	return HASHTABLE_UNKNOWN_ID;
 }
 
 /**
@@ -264,9 +268,10 @@ int SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value)
  * \param key    Hash key.
  * \param keyLen Length of the hash key.
  * \param result Retrieved value.
- * \return 0 if the element was not found, 1 otherwise.
+ * \return HASHTABLE_OK if the element was found.
+ *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-int SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t* result)
+HASHTABLE_ERROR SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t* result)
 {
 	SkipListNode *current;
 	int i;
@@ -287,9 +292,9 @@ int SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t* resu
 	if((current != NULL) && (current->hash == hash))
 	{
 		*result = current->value;
-		return 1;
+		return HASHTABLE_OK;
 	}
 
 	*result = 0;
-	return 0;
+	return HASHTABLE_UNKNOWN_ID;
 }

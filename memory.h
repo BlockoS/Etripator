@@ -36,20 +36,14 @@ typedef struct Memory_ Memory;
  * \param [in] addr Logical 16 bits address.
  * \return Offset in the 8kb.
  */
-inline uint16_t GetOffset(uint16_t addr)	
-{
-	return addr & 0x1fff;
-}
+uint16_t GetOffset(uint16_t addr);
 
 /**
  * Compute MPR id from logical address.
  * \param [in] addr Logical 16 bits address.
  * \return MPR id.
  */
-inline uint8_t GetMPRId(uint16_t addr)
-{
-	return (addr >> 13) & 0x07;
-}
+uint8_t GetMPRId(uint16_t addr);
 
 /**
  * Retrieve bank used by current logical address.
@@ -57,10 +51,7 @@ inline uint8_t GetMPRId(uint16_t addr)
  * \param [in] addr Logical 16 bits address.
  * \return Bank number.
  */
-inline uint8_t GetBank(Memory* mem, uint16_t addr)
-{
-	return 	mem->mpr[GetMPRId(addr)];
-}
+uint8_t GetBank(Memory* mem, uint16_t addr);
 
 /**
  * Compute physical address.
@@ -68,9 +59,6 @@ inline uint8_t GetBank(Memory* mem, uint16_t addr)
  * \param [in] addr Logical 16 bits address.
  * \return 21 bits long physical address.
  */
-inline uint32_t GetPhysicalAddress(Memory* mem, uint16_t addr)
-{
-	return (GetBank(mem, addr) << 13) | GetOffset(addr);
-}
+uint32_t GetPhysicalAddress(Memory* mem, uint16_t addr);
 
 #endif // MEMORY_H

@@ -20,6 +20,19 @@
 
 #include "config.h"
 
+
+/**
+ * \brief Hashtable errors.
+ */
+typedef enum
+{
+	HASHTABLE_OK = 0,       /*< Success. */
+	HASHTABLE_ID_FOUND,     /*< There is already an entry for the specified id. */
+	HASHTABLE_UNKNOWN_ID,   /*< No match found for specified id. */
+	HASHTABLE_MEMORY_ISSUE, /*< Something went wrong with the memory. */
+	HASHTABLE_UNKNOWN_ERROR /*< Unknown error. \note: must be the last one. */
+} HASHTABLE_ERROR;
+
 /** \brief Skip list node */
 typedef struct _SkipListNode
 {
@@ -41,15 +54,14 @@ typedef struct
 
 /**
  * \brief Create/Initialize skip list.
- *
  * \param list  Skip list to initialize.
- * \return 0 if an error occured, 1 on success.
+ * \return HASHTABLE_OK if the skip list was successfully created.
+ *         HASHTABLE_MEMORY_ISSUE if an error occured.
  */
-int SLCreate(SkipList* list);
+HASHTABLE_ERROR SLCreate(SkipList* list);
 
 /**
  * \brief Release memory used by the current skip list.
- *
  * \param list  Skip list to destroy.
  */
 void SLDestroy(SkipList* list);
@@ -61,9 +73,11 @@ void SLDestroy(SkipList* list);
  * \param key    Hash key.
  * \param keyLen Length of the hash key.
  * \param value  Value.
- * \return 0 if an error occured, 1 on success.
+ * \return HASHTABLE_OK if the entry was successfully added.
+ *         HASHTABLE_ID_FOUND if there is already an entry associated to the given key.
+ *         HASHTABLE_MEMORY_ISSUE if the new entry memory could not be allocated.
  */
-int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value);
+HASHTABLE_ERROR SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value);
 
 /**
  * \brief Delete an element from the list.
@@ -72,20 +86,21 @@ int SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value);
  * \param key    Hash key of the element to be deleted.
  * \param keyLen Length of the hash key.
  * \param result Retrieved value.
- * \return 0 if the element was not found, 1 if the element was successfully deleted.
+ * \return HASHTABLE_OK if the element was successfully deleted.
+ *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-int SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value);
+HASHTABLE_ERROR SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value);
 
 /**
  * \brief Find the value associated to the key.
- *
  * \param list   Skip list where the value is supposed to be stored.
  * \param key    Hash key.
  * \param keyLen Length of the hash key.
  * \param result Retrieved value.
- * \return 0 if the element was not found, 1 otherwise.
+ * \return HASHTABLE_OK if the element was found.
+ *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-int SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t *result);
+HASHTABLE_ERROR SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t *result);
 
 
 #endif // HASHTABLE_H

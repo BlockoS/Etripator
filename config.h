@@ -27,9 +27,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define strncasecmp _strnicmp
-#define strcasecmp _stricmp
-
 #include <unistd.h>
 #include <getopt.h>
 #include <stdint.h>
@@ -42,6 +39,8 @@
 #include <limits.h>
 #include <ctype.h>
 
+#include "platform/gnu/missing.h"
+
 #ifndef APIENTRY
 #define APIENTRY
 #endif
@@ -51,5 +50,7 @@
 #endif
 
 #endif
+
+#include <errno.h>
 
 #endif // CONFIG_H
