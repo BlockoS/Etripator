@@ -19,6 +19,11 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 	size_t i;
 	int err;
 
+	if(payloadExt->id != NULL)
+	{
+		payloadExt->id[0] = '\0';
+	}
+
 	payloadExt->current = NULL;
 	for(i=0; i<payloadExt->count; ++i)
 	{
@@ -78,6 +83,12 @@ static int payloadEndCFGSection(void *data)
 		{
 			return 0;
 		}
+	}
+
+	/* Check id */
+	if(payloadExt->id[0] == '\0')
+	{
+		return 0;
 	}
 
 	/* Commit current memory layout */
