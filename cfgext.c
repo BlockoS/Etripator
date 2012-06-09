@@ -68,8 +68,17 @@ static int payloadEndCFGSection(void *data)
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	struct CFGSectionParser *current = payloadExt->current;
 	size_t last = current->data.count;
-
-	// [todo] Check flags
+	size_t i;
+	
+	/* Check flags */
+	for(i=0; i<current->keyCount; i++)
+	{
+		/* If the payload flag is set, this means that the flag is mandatory. */
+		if(payloadExt->flag[i] && (current->flag[i] == 0))
+		{
+			return 0;
+		}
+	}
 
 	/* Commit current memory layout */
 	aErr = ArrayPush(&current->data, (uint8_t*)current->element);
