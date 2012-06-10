@@ -60,7 +60,7 @@ struct CFGSectionParser
 {
 	const char      *name;              /**< Section name. */
 	CFGKeyValidator *keyValueValidator; /**< Key/Value tuple validators. */
-	uint8_t         *flag;              /**< Key/Value flag. Tells if a given key is mandatory. */
+	int8_t          *flag;              /**< Key/Value flag. Tells if a given key is mandatory. */
 	size_t           keyCount;          /**< Key count. */
 	
 	// [todo] Separate section data from parsing.
@@ -85,7 +85,7 @@ struct CFGPayloadExt_
 	struct CFGSectionParser *current;   /**< Current section parser. */
 	char                    *id;		/**< Current element id. */
 	size_t                   idSize;    /**< Id string buffer size. */
-	uint8_t                 *flag;      /**< Current key/value flags. */
+	int8_t                  *flag;      /**< Current key/value flags. */
 	size_t                   flagSize;  /**< Key/Value buffer size. */
 };
 typedef struct CFGPayloadExt_ CFGPayloadExt;
@@ -98,19 +98,5 @@ void SetupCFGParserPayload(CFGPayloadExt* parser);
 
 // [todo] Create payloadExt
 // [todo] Destroy payloadExt
-
-
-#if 0
-	/* Setup section array and dictionary */
-	arErr = ArrayCreate(&config->data[1], sizeof(Section));
-	if(arErr != ARRAY_OK)
-	{
-		return 0;
-	}
-	if(SLCreate(&config->dict[1]) != HASHTABLE_OK)
-	{
-		return 0;
-	}
-#endif
 
 #endif // ETRIPATOR_CFG_EXT_H

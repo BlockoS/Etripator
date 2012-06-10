@@ -1,7 +1,5 @@
 #include "cfgext.h"
 
-// [todo] Add messages.
-
 /**
  * \brief Section start callback.
  * This callback will be called when the parser encounters a new section block.
@@ -33,7 +31,7 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 			
 			if(payloadExt->current->keyCount > payloadExt->flagSize)
 			{
-				uint8_t *tmp = (uint8_t*)realloc(payloadExt->flag, payloadExt->current->keyCount);
+				int8_t *tmp = (int8_t*)realloc(payloadExt->flag, payloadExt->current->keyCount);
 				if(tmp == NULL)
 				{
 					return 0;
@@ -41,13 +39,14 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 				payloadExt->flag     = tmp;
 				payloadExt->flagSize = payloadExt->current->keyCount;
 			}
-			memcpy(payloadExt->flag, 0, payloadExt->flagSize);
+			memset(payloadExt->flag, 0, payloadExt->flagSize);
 
 			err =  payloadExt->current->initializeElement(payloadExt->current->element);
 			if(!err)
 			{
 				return 0;
 			}
+			return 1;
 		}
 	}
 
@@ -69,7 +68,7 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 static int payloadEndCFGSection(void *data)
 {
 	ARRAY_ERR aErr;
-	HASHTABLE_ERROR hErr;
+	HASHTABLE_ERR hErr;
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
 	struct CFGSectionParser *current = payloadExt->current;
 	size_t last = current->data.count;
@@ -79,7 +78,7 @@ static int payloadEndCFGSection(void *data)
 	for(i=0, keyFound=0; i<current->keyCount; i++)
 	{
 		/* If the payload flag is set, this means that the flag is mandatory. */
-		if(payloadExt->flag[i] && (current->flag[i] == 0))
+		if((current->flag[i] > 0) && (payloadExt->flag[i] == 0))
 		{
 			return 0;
 		}
@@ -138,7 +137,7 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 	{
 		uintptr_t dummy;
 		size_t idLen = strlen(value)+1;
-		HASHTABLE_ERROR err = SLFind(&current->dict, value, idLen, &dummy);
+		HASHTABLE_ERR err = SLFind(&current->dict, value, idLen, &dummy);
 		if(err != HASHTABLE_UNKNOWN_ID)
 		{
 			/* There is already an entry for this id! */
@@ -165,7 +164,7 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 		{
 			if(strcmp(current->keyValueValidator[i].key, key) == 0)
 			{
-				if(payloadExt->flag[i])
+				if((payloadExt->flag[i] >= 0) && current->flag[i])
 				{
 					return 0;
 				}

@@ -64,7 +64,8 @@ ARRAY_ERR ArrayPush(Array* array, uint8_t *elmnt)
 	size_t lastElementOffset = array->count * array->elementSize;
 	if((lastElementOffset + array->elementSize) >= array->capacity)
 	{
-		err = ArrayGrow(array, array->count);
+		size_t count = array->count ? array->count : 2;
+		err = ArrayGrow(array, count);
 		if(err != ARRAY_OK)
 		{
 			return err;

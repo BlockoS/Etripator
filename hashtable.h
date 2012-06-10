@@ -31,7 +31,7 @@ typedef enum
 	HASHTABLE_UNKNOWN_ID,   /*< No match found for specified id. */
 	HASHTABLE_MEMORY_ISSUE, /*< Something went wrong with the memory. */
 	HASHTABLE_UNKNOWN_ERROR /*< Unknown error. \note: must be the last one. */
-} HASHTABLE_ERROR;
+} HASHTABLE_ERR;
 
 /** \brief Skip list node */
 typedef struct _SkipListNode
@@ -58,7 +58,7 @@ typedef struct
  * \return HASHTABLE_OK if the skip list was successfully created.
  *         HASHTABLE_MEMORY_ISSUE if an error occured.
  */
-HASHTABLE_ERROR SLCreate(SkipList* list);
+HASHTABLE_ERR SLCreate(SkipList* list);
 
 /**
  * \brief Release memory used by the current skip list.
@@ -77,7 +77,7 @@ void SLDestroy(SkipList* list);
  *         HASHTABLE_ID_FOUND if there is already an entry associated to the given key.
  *         HASHTABLE_MEMORY_ISSUE if the new entry memory could not be allocated.
  */
-HASHTABLE_ERROR SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value);
+HASHTABLE_ERR SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t value);
 
 /**
  * \brief Delete an element from the list.
@@ -89,7 +89,7 @@ HASHTABLE_ERROR SLAdd(SkipList* list, const char* key, size_t keyLen, uintptr_t 
  * \return HASHTABLE_OK if the element was successfully deleted.
  *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-HASHTABLE_ERROR SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value);
+HASHTABLE_ERR SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr_t *value);
 
 /**
  * \brief Find the value associated to the key.
@@ -100,7 +100,7 @@ HASHTABLE_ERROR SLDelete(SkipList* list, const char* key, size_t keyLen, uintptr
  * \return HASHTABLE_OK if the element was found.
  *         HASHTABLE_UNKNOWN_ID if the element was not found.
  */
-HASHTABLE_ERROR SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t *result);
+HASHTABLE_ERR SLFind(const SkipList* list, const char* key, size_t keyLen, uintptr_t *result);
 
 
 #endif // HASHTABLE_H
