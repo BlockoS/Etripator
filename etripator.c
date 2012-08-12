@@ -59,6 +59,9 @@ int main(int argc, char** argv)
 
   PrintMsgOpenFile(NULL);
 
+  ParseAppConfig("test.cfg");
+  failure = 0;
+#if 0
   /* Extract command line options */
   err = getCommandLineOptions(argc, argv, &cmdOptions);
   if(err <= 0)
@@ -233,6 +236,7 @@ error_1:
   	section[i].name = NULL;
   }
   free(section);
+#endif
 
   return failure;
 }

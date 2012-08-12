@@ -309,7 +309,7 @@ char processOpcode(SectionProcessor* iProcessor) {
 	    (iProcessor->labelRepository.labels[iProcessor->labelIndex].offset < nextOrgOffset) )
 	{
 		/* Print label*/
-		sprintf(line, "l%04x_%02x: ", iProcessor->labelRepository.labels[iProcessor->labelIndex].offset,  iProcessor->processed->id);
+		sprintf(line, "l%04xx: ", iProcessor->labelRepository.labels[iProcessor->labelIndex].offset);
 
 		/* Add displacement */
 		if(iProcessor->labelRepository.labels[iProcessor->labelIndex].offset != iProcessor->orgOffset)
@@ -423,16 +423,6 @@ char processOpcode(SectionProcessor* iProcessor) {
 			/* Compute log base 2 of data */
 			for(i=0; (i<8) && ((data[0] & 1) == 0); ++i, data[0] >>= 1);
 			data[0] = i;		
-		}
-
-		/* Add section to jump label */
-		if(pce_opcode[inst].type == 20)
-		{
-			data[3] = iProcessor->processed->id & 0xff;
-		}
-		else if(pce_opcode[inst].type == 19)
-		{
-			data[2] = iProcessor->processed->id & 0xff;
 		}
 
 		/* Print data */

@@ -1,3 +1,4 @@
+#include "message.h"
 #include "cfgext.h"
 
 /**
@@ -80,6 +81,7 @@ static int payloadEndCFGSection(void *data)
 		/* If the payload flag is set, this means that the flag is mandatory. */
 		if((current->flag[i] > 0) && (payloadExt->flag[i] == 0))
 		{
+			ERROR_MSG("[%s] : missing %s.\n", current->name, current->keyValueValidator[i].key);
 			return 0;
 		}
 		keyFound += payloadExt->flag[i];
@@ -88,18 +90,19 @@ static int payloadEndCFGSection(void *data)
 	/* Check for empty section */
 	if(keyFound == 0)
 	{
+		ERROR_MSG("[%s] : no attributes found.\n", current->name);
 		return 0;
 	}
 
 	/* Check id */
 	if(payloadExt->id[0] == '\0')
 	{
+		ERROR_MSG("[%s] : missing id.\n", current->name);
 		return 0;
 	}
 
-	/* Commit current memory layout */
-	aErr = ArrayPush(&current->data, (uint8_t*)current->element);
-	if(aErr != ARRAY_OK)
+	/* Validate element */
+	if(current->validateElement(current->element) <= 0)
 	{
 		return 0;
 	}
@@ -111,8 +114,14 @@ static int payloadEndCFGSection(void *data)
 		return 0;
 	}
 
-	/* Copy temporary element into the array. */
-	return current->copyElement(ArrayAt(&current->data, last), data);
+	/* Commit current section */
+	aErr = ArrayPush(&current->data, (uint8_t*)current->element);
+	if(aErr != ARRAY_OK)
+	{
+		return 0;
+	}
+
+	return 1;
 }
 
 /**
@@ -141,6 +150,7 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 		if(err != HASHTABLE_UNKNOWN_ID)
 		{
 			/* There is already an entry for this id! */
+			ERROR_MSG("[%s] : an element with id %s already exists.\n", current->name, value);
 			return 0;
 		}
 
@@ -164,12 +174,22 @@ static int payloadValidateCFGTuple(void *data, const char* key, const char* valu
 		{
 			if(strcmp(current->keyValueValidator[i].key, key) == 0)
 			{
-				if((payloadExt->flag[i] >= 0) && current->flag[i])
+				if((payloadExt->flag[i] > 0) && current->flag[i])
 				{
+					ERROR_MSG("[%s] : %s multiple attributes found.\n", current->name, key);
 					return 0;
 				}
-				++payloadExt->flag[i];
-				return current->keyValueValidator[i].validate(current->element, key, value);
+				else
+				{
+					int err;
+					++payloadExt->flag[i];
+					err = current->keyValueValidator[i].validate(current->element, key, value);
+					if(err <= 0)
+					{
+						ERROR_MSG("[%s] : %s invalid value.\n", current->name, key);
+					}
+					return err;
+				}
 			}
 		}
 	}

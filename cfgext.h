@@ -43,15 +43,14 @@ typedef struct
 typedef int (*CFGExtInitializeElementProc) (void *data);
 
 /**
- * \brief Copy element.
+ * \brief Validate element.
  * This callback will be called when the current section is over (ie at end of file or when a new section starts).
- * \param [out] dst Pointer to destination data.
- * \param [in]  src Pointer to source data.
+ * \param [in out] element Current element.
  * \return 
  *     <=0 failure
  *     >0 success 
  */
-typedef int (*CFGExtCopyElementProc) (void *dst, void *src);
+typedef int (*CFGExtValidateElementProc) (void *element);
 
 /**
  * CFG/Ini section parser.
@@ -62,16 +61,14 @@ struct CFGSectionParser
 	CFGKeyValidator *keyValueValidator; /**< Key/Value tuple validators. */
 	int8_t          *flag;              /**< Key/Value flag. Tells if a given key is mandatory. */
 	size_t           keyCount;          /**< Key count. */
-	
-	// [todo] Separate section data from parsing.
-
 	void            *element;           /**< Temporary element. */
 	
+	// [todo] Separate section data from parsing.
 	Array            data;              /**< Array containing parsed elements. */
 	SkipList         dict;              /**< Hashtable containg the element index in the data array. */
 
 	CFGExtInitializeElementProc initializeElement; /**< Initialize/reset temporary element. */
-	CFGExtCopyElementProc       copyElement;       /**< Copy element to element array. */
+	CFGExtValidateElementProc   validateElement;   /**< Validate element. */
 };
 
 /**

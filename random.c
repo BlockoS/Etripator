@@ -43,10 +43,10 @@ unsigned long CMWC4096(void)
 {
 	unsigned long long t, a=18782LL,b=4294967295LL;
 	static unsigned long i=4095;
-	unsigned long r=(b-1);
+	unsigned long r=(unsigned long)(b-1);
 	i=(i+1)&4095;
 	t=a*Q[i]+c;
 	c=(t>>32); t=(t&b)+c;
 	if(t>r) {c++; t=t-b;}
-    return (Q[i]=r-t);
+    return (Q[i]=(unsigned long)(r-t));
 } 

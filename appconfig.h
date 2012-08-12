@@ -25,5 +25,6 @@
 #include "hashtable.h"
 
 // [todo]
+int ParseAppConfig(const char* cfgFilename);
 
 #endif // APP_CONFIG_H

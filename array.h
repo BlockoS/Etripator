@@ -37,9 +37,9 @@ typedef enum
 struct Array_
 {
 	uint8_t *buffer;      /**< Data buffeR. */
-	size_t    elementSize; /**< Element size. */
-	size_t    count;       /**< Element count. */	
-	size_t    capacity;    /**< Buffer capacity in bytes. */
+	size_t   elementSize; /**< Element size. */
+	size_t   count;       /**< Element count. */	
+	size_t   capacity;    /**< Buffer capacity in bytes. */
 };
 typedef struct Array_ Array;
 
