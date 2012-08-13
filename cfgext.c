@@ -4,8 +4,6 @@
 /**
  * \brief Section start callback.
  * This callback will be called when the parser encounters a new section block.
- * If the name of the section matches one of the names specified in the section 
- * parser array, the corresponding callback will be called.
  * \param [in] data user provided data 
  * \param [in] sectionName section name
  * \return 
@@ -18,49 +16,20 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
 	size_t i;
 	int err;
 
-	if(payloadExt->id != NULL)
+	memset(payloadExt->flag, 0, payloadExt->flagSize);
+
+	payloadExt->section.name = strdup(sectionName);
+	err =  payloadExt->section.initializeElement(payloadExt->section.element);
+	if(!err)
 	{
-		payloadExt->id[0] = '\0';
+		return 0;
 	}
-
-	payloadExt->current = NULL;
-	for(i=0; i<payloadExt->count; ++i)
-	{
-		if(strcmp(sectionName, payloadExt->section[i].name) == 0)
-		{
-			payloadExt->current = payloadExt->section + i;
-			
-			if(payloadExt->current->keyCount > payloadExt->flagSize)
-			{
-				int8_t *tmp = (int8_t*)realloc(payloadExt->flag, payloadExt->current->keyCount);
-				if(tmp == NULL)
-				{
-					return 0;
-				}
-				payloadExt->flag     = tmp;
-				payloadExt->flagSize = payloadExt->current->keyCount;
-			}
-			memset(payloadExt->flag, 0, payloadExt->flagSize);
-
-			err =  payloadExt->current->initializeElement(payloadExt->current->element);
-			if(!err)
-			{
-				return 0;
-			}
-			return 1;
-		}
-	}
-
-	// TODO : handle unknown sections ?
-
-	return 0;
+	return 1;
 }
 
 /**
  * \brief Section end callback
  * This callback will be called when the current section is over (ie at end of file or when a new section starts).
- * If the name of the section matches one of the names specified in the section 
- * parser array, the corresponding callback will be called.
  * \param [in] data user provided data 
  * \return 
  *     <=0 failure
@@ -71,7 +40,7 @@ static int payloadEndCFGSection(void *data)
 	ARRAY_ERR aErr;
 	HASHTABLE_ERR hErr;
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
-	struct CFGSectionParser *current = payloadExt->current;
+	struct CFGSectionParser *current = &payloadExt->section;
 	size_t last = current->data.count;
 	size_t i, keyFound;
 	
@@ -94,22 +63,8 @@ static int payloadEndCFGSection(void *data)
 		return 0;
 	}
 
-	/* Check id */
-	if(payloadExt->id[0] == '\0')
-	{
-		ERROR_MSG("[%s] : missing id.\n", current->name);
-		return 0;
-	}
-
 	/* Validate element */
-	if(current->validateElement(current->element) <= 0)
-	{
-		return 0;
-	}
-
-	/* Add id to hashtable */
-	hErr = SLAdd(&current->dict, payloadExt->id, strlen(payloadExt->id)+1, last);
-	if(hErr != HASHTABLE_OK)
+	if(current->validateElement(current->name, current->element) <= 0)
 	{
 		return 0;
 	}
@@ -139,57 +94,28 @@ static int payloadEndCFGSection(void *data)
 static int payloadValidateCFGTuple(void *data, const char* key, const char* value)
 {
 	CFGPayloadExt *payloadExt = (CFGPayloadExt*)data;
-	struct CFGSectionParser *current = payloadExt->current;
+	struct CFGSectionParser *current = &payloadExt->section;
 
-	/* Id key receives a special treatment. */
-	if(strcmp("id", key) == 0)
+	size_t i;
+	for(i=0; i<current->keyCount; ++i)
 	{
-		uintptr_t dummy;
-		size_t idLen = strlen(value)+1;
-		HASHTABLE_ERR err = SLFind(&current->dict, value, idLen, &dummy);
-		if(err != HASHTABLE_UNKNOWN_ID)
+		if(strcmp(current->keyValueValidator[i].key, key) == 0)
 		{
-			/* There is already an entry for this id! */
-			ERROR_MSG("[%s] : an element with id %s already exists.\n", current->name, value);
-			return 0;
-		}
-
-		/* Save id for commit */
-		if(idLen > payloadExt->idSize)
-		{
-			char *tmp = (char*)realloc(payloadExt->id, idLen);
-			if(tmp == 0)
-				return 0;
-			payloadExt->id     = tmp;
-			payloadExt->idSize = idLen;
-		}
-		memcpy(payloadExt->id, value, idLen);
-
-		return 1;
-	}
-	else
-	{
-		size_t i;
-		for(i=0; i<current->keyCount; ++i)
-		{
-			if(strcmp(current->keyValueValidator[i].key, key) == 0)
+			if((payloadExt->flag[i] > 0) && current->flag[i])
 			{
-				if((payloadExt->flag[i] > 0) && current->flag[i])
+				ERROR_MSG("[%s] : %s multiple attributes found.\n", current->name, key);
+				return 0;
+			}
+			else
+			{
+				int err;
+				++payloadExt->flag[i];
+				err = current->keyValueValidator[i].validate(current->element, key, value);
+				if(err <= 0)
 				{
-					ERROR_MSG("[%s] : %s multiple attributes found.\n", current->name, key);
-					return 0;
+					ERROR_MSG("[%s] : %s invalid value.\n", current->name, key);
 				}
-				else
-				{
-					int err;
-					++payloadExt->flag[i];
-					err = current->keyValueValidator[i].validate(current->element, key, value);
-					if(err <= 0)
-					{
-						ERROR_MSG("[%s] : %s invalid value.\n", current->name, key);
-					}
-					return err;
-				}
+				return err;
 			}
 		}
 	}

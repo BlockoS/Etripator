@@ -18,75 +18,6 @@
 #include "appconfig.h"
 #include "message.h"
 
-/**
- * Validate mpr value.
- * \see CFGKeyValueProc
- */
-static int validateMPR (void *data, const char* key, const char* value)
-{
-	const char *start;
-	char *end;
-	unsigned int bank;
-	unsigned int id;
-
-	Memory *memoryLayout = (Memory*)data;
-
-	start = value;
-	end   = NULL;
-	
-	errno = 0;
-	bank = strtoul(start, &end, 16);
-	id   = key[3] - '0';
-	if(errno || (bank >= 0xff) || (id >= PCE_MPR_COUNT))
-	{
-		return 0;
-	}
-
-	memoryLayout->mpr[id] = bank;
-
-	return 1; 
-}
-
-/**
- * Reset memory layout.
- * \param [in] data Pointer to memory layout.
- * \return always 1.
- */
-static int ResetMemoryLayout (void *data)
-{
-	Memory *memoryLayout = (Memory*)data;
-	memset(memoryLayout->mpr, 0, PCE_MPR_COUNT);
-	memoryLayout->mpr[0] = 0xff;
-	memoryLayout->mpr[1] = 0xf8;
-	return 1;
-}
-
-/**
- * Validate memory section.
- * \param [in out] element Current memory layout.
- * \return always 1.
- */
-static int ValidateMemoryLayout(void* element)
-{
-	// nothing to do atm.
-	return 1;
-}
-
-/** MPR key validator */
-static CFGKeyValidator g_memoryKeyValidator[PCE_MPR_COUNT] = 
-{
-	{"mpr0", validateMPR}, {"mpr1", validateMPR},
-	{"mpr2", validateMPR}, {"mpr3", validateMPR},
-	{"mpr4", validateMPR}, {"mpr5", validateMPR},
-	{"mpr6", validateMPR}, {"mpr7", validateMPR}
-};
-
-/** Memory layout key flags. **/
-static int8_t g_memoryKeyFlag[PCE_MPR_COUNT] =
-{
-	0, 0, 0, 0, 0, 0, 0, 0
-};
-
 static const char* g_supportedSectionTypeName[] =
 {
 	"bin_data", "inc_data", "code", NULL
@@ -114,14 +45,18 @@ static int ResetSection (void *data)
 
 /**
  * Validate current section.
+ * \param [in] name Section name.
  * \param [in out] element Current section.
  * \return 
  *     <=0 failure
  *     >0 success 
  */
-static int ValidateSection(void *element)
+static int ValidateSection(char* name, void *element)
 {
 	Section *section = (Section*)element;
+
+	/* Set section name */
+	section->name = name;
 
 	/* Check prefix */
 	if(section->prefix == NULL)
@@ -259,14 +194,13 @@ static CFGKeyValidator g_sectionKeyValidator[] =
 	{ "org",    validateSectionOrg},
 	{ "offset", validateSectionOffset},
 	{ "size",   validateSectionSize},
-	{ "prefix", validateSectionPrefix},
-	{ "memory", validateSectionMemory}
+	{ "prefix", validateSectionPrefix}
 };
 
 /** Section key flags. **/
 static int8_t g_sectionKeyFlag[] =
 {
-	1, 1, 1, 0, 0, 0, 0
+	1, 1, 1, 0, 0, 0
 };
 
 // [todo] output and fallback mecanism to the "standard" cfg parser
@@ -274,57 +208,25 @@ static int8_t g_sectionKeyFlag[] =
 int ParseAppConfig(const char* cfgFilename)
 {
 	CFG_ERR cfgErr;
-
 	CFGPayloadExt payloadExt;
-
-	Memory   tmpMemoryLayout;
+	
 	Section  tmpSection;
-
-	struct CFGSectionParser tmpSectionParser[2];
 
 	size_t i;
 
-	// [todo] Setup section parser and payloadExt
-	payloadExt.flag     = NULL;
+	payloadExt.section.name              = NULL;
+	payloadExt.section.initializeElement = ResetSection;
+	payloadExt.section.validateElement   = ValidateSection;
+	payloadExt.section.keyCount          = 7;
+	payloadExt.section.keyValueValidator = g_sectionKeyValidator;
+	payloadExt.section.flag              = g_sectionKeyFlag;
+	
+	payloadExt.flag     = (int8_t*)malloc(payloadExt.section.keyCount * sizeof(int8_t));
 	payloadExt.flagSize = 0;
-	
-	payloadExt.id     = NULL;
-	payloadExt.idSize = 0;
 
-	payloadExt.count = 2;
 
-	payloadExt.section = tmpSectionParser;
-
-	payloadExt.section[0].name              = "memory";
-	payloadExt.section[0].initializeElement = ResetMemoryLayout;
-	payloadExt.section[0].validateElement   = ValidateMemoryLayout;
-	payloadExt.section[0].keyCount          = PCE_MPR_COUNT;
-	payloadExt.section[0].keyValueValidator = g_memoryKeyValidator;
-	payloadExt.section[0].flag              = g_memoryKeyFlag;
-
-	payloadExt.section[1].name              = "section";
-	payloadExt.section[1].initializeElement = ResetSection;
-	payloadExt.section[1].validateElement   = ValidateSection;
-	payloadExt.section[1].keyCount          = 7;
-	payloadExt.section[1].keyValueValidator = g_sectionKeyValidator;
-	payloadExt.section[1].flag              = g_sectionKeyFlag;
-	
-	payloadExt.section[0].element = &tmpMemoryLayout;
-	if(ArrayCreate(&payloadExt.section[0].data, sizeof(Memory)) != ARRAY_OK)
-	{
-		return 0;
-	}
-	if(SLCreate(&payloadExt.section[0].dict) != HASHTABLE_OK)
-	{
-		return 0;
-	}
-
-	payloadExt.section[1].element = &tmpSection;
-	if(ArrayCreate(&payloadExt.section[1].data, sizeof(Section)) != ARRAY_OK)
-	{
-		return 0;
-	}
-	if(SLCreate(&payloadExt.section[1].dict) != HASHTABLE_OK)
+	payloadExt.section.element = &tmpSection;
+	if(ArrayCreate(&payloadExt.section.data, sizeof(Section)) != ARRAY_OK)
 	{
 		return 0;
 	}
@@ -339,21 +241,7 @@ int ParseAppConfig(const char* cfgFilename)
 		return 0;
 	}
 
-	/* Check section memory id */
-	for(i=0; i<payloadExt.section[1].data.count; i++)
-	{
-		Section *current = (Section*)ArrayAt(&payloadExt.section[1].data, i);
-		if((current != NULL) && (current->memory != NULL))
-		{
-			uintptr_t dummy;
-			if(SLFind(&payloadExt.section[0].dict, current->memory, strlen(current->memory)+1, &dummy) != HASHTABLE_OK)
-			{
-				ERROR_MSG("%s[%s] Unknown memory layout: %s", cfgFilename, current->name, current->memory);
-				return 0;
-			}
-		}
-	}
-
+	// [todo] check section memory id
 	// [todo] clean memory
 
 	return 1;

@@ -45,27 +45,25 @@ typedef int (*CFGExtInitializeElementProc) (void *data);
 /**
  * \brief Validate element.
  * This callback will be called when the current section is over (ie at end of file or when a new section starts).
+ * \param [in] name Section name.
  * \param [in out] element Current element.
  * \return 
  *     <=0 failure
  *     >0 success 
  */
-typedef int (*CFGExtValidateElementProc) (void *element);
+typedef int (*CFGExtValidateElementProc) (char* name, void *element);
 
 /**
  * CFG/Ini section parser.
  */
 struct CFGSectionParser
 {
-	const char      *name;              /**< Section name. */
+	char            *name;              /**< Section name. */
 	CFGKeyValidator *keyValueValidator; /**< Key/Value tuple validators. */
 	int8_t          *flag;              /**< Key/Value flag. Tells if a given key is mandatory. */
 	size_t           keyCount;          /**< Key count. */
 	void            *element;           /**< Temporary element. */
-	
-	// [todo] Separate section data from parsing.
 	Array            data;              /**< Array containing parsed elements. */
-	SkipList         dict;              /**< Hashtable containg the element index in the data array. */
 
 	CFGExtInitializeElementProc initializeElement; /**< Initialize/reset temporary element. */
 	CFGExtValidateElementProc   validateElement;   /**< Validate element. */
@@ -77,11 +75,7 @@ struct CFGSectionParser
 struct CFGPayloadExt_
 {
 	struct CFGPayload        payload;   /**< Standard payload structure. */
-	struct CFGSectionParser *section;   /**< Section parser array. */
-	size_t                   count;     /**< Section count. */
-	struct CFGSectionParser *current;   /**< Current section parser. */
-	char                    *id;		/**< Current element id. */
-	size_t                   idSize;    /**< Id string buffer size. */
+	struct CFGSectionParser  section;   /**< Section parser. */
 	int8_t                  *flag;      /**< Current key/value flags. */
 	size_t                   flagSize;  /**< Key/Value buffer size. */
 };
