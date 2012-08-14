@@ -24,7 +24,11 @@
 #include "array.h"
 #include "hashtable.h"
 
-// [todo]
+/** 
+ * Parse configuration file.
+ * \param [in] cfgFilename Configuration filename.
+ * \return (todo)
+ **/
 int ParseAppConfig(const char* cfgFilename);
 
 #endif // APP_CONFIG_H

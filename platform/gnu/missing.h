@@ -20,7 +20,6 @@
 
 #include <inttypes.h>
 
-#if 0
 /**
  * Perform a bitwise rotation.
  */
@@ -34,6 +33,5 @@ static inline uint32_t _rotl(uint32_t r, uint8_t by)
 	);
 	return r;
 }
-#endif
 
 #endif

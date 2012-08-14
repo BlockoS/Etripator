@@ -74,14 +74,11 @@ const char* GetCFGErrorMsg(CFG_ERR err)
 		"Unknown error"
 	};
 
-	if((err >= CFG_OK) && (err < CFG_UNKNOWN_ERROR))
+	if(err > CFG_UNKNOWN_ERROR)
 	{
-		return errMsg[err];
+		err = CFG_UNKNOWN_ERROR;
 	}
-	else
-	{
-		return errMsg[CFG_UNKNOWN_ERROR];
-	}
+	return errMsg[err];
 }
 
 /**

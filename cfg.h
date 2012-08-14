@@ -95,6 +95,15 @@ struct CFGPayload
 };
 
 /**
+ * \brief CFG key parsing helper.
+ */
+typedef struct
+{
+	const char*     key;      /**< Key name. */
+	CFGKeyValueProc validate; /**< Value validation callback. */
+} CFGKeyValidator;
+
+/**
  * \brief Parse CFG file.
  * \param [in] filename CFG/Ini filename.
  * \param [in] payload User defined callbacks and data.

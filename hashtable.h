@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-
 /**
  * \brief Hashtable errors.
  */

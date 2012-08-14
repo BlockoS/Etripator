@@ -73,7 +73,7 @@ static void PrintMsgFile(MessageType msgType, const char* file, size_t line, con
 {
 	va_list argList;
 
-	fprintf(g_Stream, "%s %s:%u %s : ", g_MessageTypeLabel[msgType], file, line, function);
+	fprintf(g_Stream, "%s %s:%lu %s : ", g_MessageTypeLabel[msgType], file, line, function);
 
 	va_start(argList, format);
 	vfprintf(g_Stream, format, argList);
