@@ -19,6 +19,8 @@
 #include "cfg.h"
 #include "message.h"
 
+// [todo] ERROR_MSG
+
 static const char* g_supportedSectionTypeName[] =
 {
 	"bin_data", "inc_data", "code", "memory", NULL
@@ -33,10 +35,10 @@ typedef struct
 	int8_t          *keyOccurence;      /**< Number of times a key was encountered. */
 	size_t           keyCount;          /**< Key count. */
 	char             type;              /**< Item type. */
-	char*            name;              /**< Item name. */
+	char            *name;              /**< Item name. */
 	Section          section;           /**< Current section being parsed. */
 	Memory           memory;			/**< Current memory layout being parsed. */
-	// Todo array pointers
+	AppConfig       *config;            /**< Application configuration. */
 } ConfigurationData;
 
 /**
@@ -172,21 +174,37 @@ static int payloadBeginCFGSection(void *data, const char* sectionName)
  */
 static int payloadEndCFGSection(void *data)
 {
-/*
+
 	ARRAY_ERR aErr;
 	HASHTABLE_ERR hErr;
-*/
+	uint32_t last;
+
 	ConfigurationData *cfgData = (ConfigurationData*)data;
 	int err = 1;
 
 	if(cfgData->type == 3)
 	{
-		// (todo) check name unicity
-		// (todo) Memory
+		hErr = SLFind(&cfgData->config->memoryDict, cfgData->name, strlen(cfgData->name)+1, &last);
+		if(hErr != HASHTABLE_UNKNOWN_ID)
+		{
+			return 0;
+		}
+
+		last = cfgData->config->memory.count;
+		aErr = ArrayPush(&cfgData->config->memory, (uint8_t*)(&cfgData->memory));
+		if(aErr != ARRAY_OK)
+		{
+			return 0;
+		}
+
+		hErr = SLAdd(&cfgData->config->memoryDict, cfgData->name, strlen(cfgData->name)+1, last);
+		if(hErr != HASHTABLE_OK)
+		{
+			return 0;
+		}
 	}
 	else
 	{
-		// (todo) check name unicity
 		cfgData->section.type = cfgData->type;
 		cfgData->section.name = cfgData->name;
 
@@ -196,7 +214,24 @@ static int payloadEndCFGSection(void *data)
 			return err;
 		}
 
-		// (todo) Push to array
+		hErr = SLFind(&cfgData->config->sectionDict, cfgData->section.name, strlen(cfgData->section.name)+1, &last);
+		if(hErr != HASHTABLE_UNKNOWN_ID)
+		{
+			return 0;
+		}
+
+		last = cfgData->config->section.count;
+		aErr = ArrayPush(&cfgData->config->section, (uint8_t*)(&cfgData->section));
+		if(aErr != ARRAY_OK)
+		{
+			return 0;
+		}
+
+		hErr = SLAdd(&cfgData->config->sectionDict, cfgData->section.name, strlen(cfgData->section.name)+1, last);
+		if(hErr != HASHTABLE_OK)
+		{
+			return 0;
+		}
 	}
 
 	return err;
@@ -362,28 +397,63 @@ static int8_t g_sectionKeyFlag[] =
 	1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-int ParseAppConfig(const char* cfgFilename)
+/// Create application configuration structure.
+/// \param [out] data Application data.
+/// \return 0 if an error occured. 1 otherwise.
+int CreateAppConfig(AppConfig* data)
+{
+	if(ArrayCreate(&data->section, sizeof(Section)) != ARRAY_OK)
+	{
+		return 0;
+	}
+	if(ArrayCreate(&data->memory, sizeof(Memory)) != ARRAY_OK)
+	{
+		return 0;
+	}	
+	if(SLCreate(&data->sectionDict) != HASHTABLE_OK)
+	{
+		return 0;
+	}
+	if(SLCreate(&data->memoryDict) != HASHTABLE_OK)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+/// Release application configuration data resources.
+/// \param [in out] data Application data.
+void DestroyAppConfig(AppConfig* data)
+{
+	ArrayDestroy(&data->section);
+	ArrayDestroy(&data->memory);
+	SLDestroy(&data->sectionDict);
+	SLDestroy(&data->memoryDict);
+}
+
+/** 
+ * Parse configuration file.
+ * \param [in] cfgFilename Configuration filename.
+ * \param [out] data Application configuration.
+ * \return (todo)
+ **/
+int ParseAppConfig(const char* cfgFilename, AppConfig* data)
 {
 	CFG_ERR cfgErr;
 	ConfigurationData cfgData;
 	struct CFGPayload cfgPayload;
+	size_t i;
 
 	cfgData.name              = NULL;
 	cfgData.type              = 0;
 	cfgData.keyCount          = 15; // todo
 	cfgData.keyValueValidator = g_sectionKeyValidator;
 	cfgData.flag              = g_sectionKeyFlag;
-	
+	cfgData.config            = data;
 	cfgData.keyOccurence = (int8_t*)malloc(cfgData.keyCount * sizeof(int8_t));
 	
 	ResetConfigurationData(&cfgData);
 
-/* (todo) main
-	if(ArrayCreate(&payloadExt.section.data, sizeof(Section)) != ARRAY_OK)
-	{
-		return 0;
-	}
-*/
 	cfgPayload.data = &cfgData;
 	cfgPayload.line = 0;
 	cfgPayload.beginSectionCallback = payloadBeginCFGSection;
@@ -392,14 +462,32 @@ int ParseAppConfig(const char* cfgFilename)
 
 	/* Parse file */
 	cfgErr = ParseCFG(cfgFilename, &cfgPayload);
+	free(cfgData.keyOccurence);
 	if(cfgErr != CFG_OK)
 	{
 		ERROR_MSG("%s[%d] %s", cfgFilename, cfgPayload.line, GetCFGErrorMsg(cfgErr));
 		return 0;
 	}
 
-	// [todo] check section memory id
-	// [todo] clean memory
+	for(i=0; i<cfgData.config->section.count; i++)
+	{
+		Section *current = (Section*)ArrayAt(&cfgData.config->section, i);
+		if(current == NULL)
+		{
+			return 0;
+		}
 
+	
+		if(current->memory != NULL)
+		{
+			HASHTABLE_ERR hErr;
+			uint32_t dummy;
+			hErr = SLFind(&cfgData.config->memoryDict, current->memory, strlen(current->memory)+1, &dummy);
+			if(hErr == HASHTABLE_UNKNOWN_ID)
+			{
+				return 0;
+			}
+		}
+	}
 	return 1;
 }

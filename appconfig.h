@@ -24,11 +24,23 @@
 #include "array.h"
 #include "hashtable.h"
 
+typedef struct
+{
+	Array section;
+	Array memory;
+	SkipList sectionDict;
+	SkipList memoryDict;
+} AppConfig;
+
+int CreateAppConfig(AppConfig* data);
+void DestroyAppConfig(AppConfig* data);
+
 /** 
  * Parse configuration file.
  * \param [in] cfgFilename Configuration filename.
+ * \param [out] data Application configuration.
  * \return (todo)
  **/
-int ParseAppConfig(const char* cfgFilename);
+int ParseAppConfig(const char* cfgFilename, AppConfig* data);
 
 #endif // APP_CONFIG_H
