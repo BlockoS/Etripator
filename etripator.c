@@ -49,19 +49,17 @@ int main(int argc, char** argv)
   SECTION_ERR serr;
 
   CommandLineOptions cmdOptions;
-
+  AppConfig config;
+	
   Section* section;
   size_t sectionCount;
 
   SectionProcessor processor;
 
   atexit(exit_callback);
-
-  PrintMsgOpenFile(NULL);
-
-  ParseAppConfig("test.cfg");
+  
   failure = 0;
-#if 0
+
   /* Extract command line options */
   err = getCommandLineOptions(argc, argv, &cmdOptions);
   if(err <= 0)
@@ -70,6 +68,35 @@ int main(int argc, char** argv)
 	return (err < 0) ? 1 : 0;
   }
 
+  err = PrintMsgOpenFile(cmdOptions.logFileName);
+  err = CreateAppConfig(&config);
+  err = ParseAppConfig(cmdOptions.cfgFileName, &config);
+
+  /* Open ROM file */
+  /* Open rom */
+  in = fopen(cmdOptions.romFileName, "rb");
+  if(NULL == in)
+  {
+	ERROR_MSG("Unable to open %s : %s", cmdOptions.romFileName, strerror(errno));
+	goto error_1;
+  }  
+
+  /* Get file size */
+  fseek(in, 0, SEEK_END);
+  size  = ftell(in);
+  fseek(in, 0, SEEK_SET);
+  size -= ftell(in);
+
+error_2:
+  if(NULL != in)
+  {
+    fclose(in);
+  }
+
+error_1:
+  DestroyAppConfig(&config);
+
+#if 0
   failure = 1;
 
   /* Read cfg file */
@@ -82,21 +109,6 @@ int main(int argc, char** argv)
   	ERROR_MSG("Unable to read %s", cmdOptions.cfgFileName);
   	goto error_1;
   }
-
-  /* Open rom */
-  in = fopen(cmdOptions.romFileName, "rb");
-  if(in == NULL)
-  {
-	ERROR_MSG("Unable to open %s : %s", cmdOptions.romFileName, strerror(errno));
-	goto error_1;
-  }  
-
-  fseek(in, 0, SEEK_END);
-
-  /* Get file size */
-  size  = ftell(in);
-  fseek(in, 0, SEEK_SET);
-  size -= ftell(in);
 
   /* Get irq offsets */
   if(cmdOptions.extractIRQ)

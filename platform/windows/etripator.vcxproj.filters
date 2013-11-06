@@ -7,6 +7,9 @@
     <Filter Include="platform\windows">
       <UniqueIdentifier>{35bae726-8402-4cd5-8bd1-189946692111}</UniqueIdentifier>
     </Filter>
+    <Filter Include="arch">
+      <UniqueIdentifier>{241e1286-6cd1-49be-bd5b-92182a0a4a74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\etripator.c" />
@@ -30,6 +33,9 @@
     <ClCompile Include="..\..\hashtable.c" />
     <ClCompile Include="..\..\random.c" />
     <ClCompile Include="..\..\array.c" />
+    <ClCompile Include="..\..\arch\pce.c">
+      <Filter>arch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\irq.h" />
@@ -59,5 +65,8 @@
     <ClInclude Include="..\..\hashtable.h" />
     <ClInclude Include="..\..\random.h" />
     <ClInclude Include="..\..\array.h" />
+    <ClInclude Include="..\..\arch\pce.h">
+      <Filter>arch</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

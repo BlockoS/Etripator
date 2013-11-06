@@ -17,6 +17,7 @@
 */
 #include "config.h"
 #include "message.h"
+#include "arch/pce.h"
 #include "decode.h"
 
 /*

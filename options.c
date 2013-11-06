@@ -28,6 +28,7 @@ void usage()
             "                     header jump are not performed.\n"
 			"--help or -h       : displays this message.\n"
 			"--out or -o <file> : main asm file containing includes for all sections \n"
+			"--log or -l <file> : log output file (optional)\n"
 			"                     as long the irq vector table if the irq-detect\n"
 			"                     option is enabled.\n");
 }
@@ -43,11 +44,12 @@ void usage()
  */
 int getCommandLineOptions(int argc, char** argv, CommandLineOptions* iOptions)
 {
-	char *shortOptions = "icho:";
+	char *shortOptions = "ichl:o:";
 	struct option longOptions[] = {
 		{"irq-detect", 0, 0, 'i'},
 		{"cd",	       0, 0, 'c'},
 		{"help",       0, 0, 'h'},
+		{"log",        1, 0, 'l'},
 		{"out",        1, 0, 'o'},
 		{ 0,           0, 0,  0 }
 	};
@@ -59,7 +61,8 @@ int getCommandLineOptions(int argc, char** argv, CommandLineOptions* iOptions)
 	iOptions->cfgFileName  = NULL;
 	iOptions->romFileName  = NULL;
 	iOptions->mainFileName = "main.asm";
-	
+	iOptions->logFileName  = NULL;
+
 	/* Note : IRQ detection is disabled with the cdrom option */
 	while ((opt = getopt_long (argc, argv, shortOptions, longOptions, &idx)) > 0)
 	{
@@ -77,6 +80,10 @@ int getCommandLineOptions(int argc, char** argv, CommandLineOptions* iOptions)
 
 			case 'o':
 				iOptions->mainFileName = optarg;
+				break;
+
+			case 'l':
+				iOptions->logFileName = optarg;
 				break;
 
 			case 'h':

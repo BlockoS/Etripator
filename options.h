@@ -30,6 +30,7 @@ struct CommandLineOptions_
 	char *cfgFileName;   /**< CFG/Ini filename. */
 	char *romFileName;   /**< ROM filename. */
 	char *mainFileName;  /**< Main assembly filename. */
+	char *logFileName;   /**< Log filename. */
 };
 typedef struct CommandLineOptions_ CommandLineOptions;
 

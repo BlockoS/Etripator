@@ -1,6 +1,6 @@
 /*
     This file is part of Etripator,
-    copyright (c) 2009--2012 Vincent Cruz.
+    copyright (c) 2009--2013 Vincent Cruz.
 
     Etripator is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,17 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with Etripator.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef OPCODES_H
-#define OPCODES_H
+#ifndef ERROR_H
+#define ERROR_H
 
-/**
- * Opcode.
- */
-struct opcode_ {
-  const char*   name;    /**< Name. */
-  unsigned char size;    /**< Size in bytes. */
-  unsigned char type;    /**< Type \see pce_opstring. */
-};
-typedef struct opcode_ Opcode;
+#include "enum.h"
 
-#endif // OPCODES_H
+BEGIN_ENUM(error)
+	ENUM(e_ok, "success")
+	ENUM(e_invalid_parameter, "invalid parameter")
+	ENUM(e_not_enough_memory, "not enough memory")
+END_ENUM(error)
+
+#endif // ERROR_H
