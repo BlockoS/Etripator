@@ -7,42 +7,27 @@
     <Filter Include="platform\windows">
       <UniqueIdentifier>{35bae726-8402-4cd5-8bd1-189946692111}</UniqueIdentifier>
     </Filter>
-    <Filter Include="arch">
-      <UniqueIdentifier>{241e1286-6cd1-49be-bd5b-92182a0a4a74}</UniqueIdentifier>
+    <Filter Include="architecture">
+      <UniqueIdentifier>{3b2a918c-e285-4d74-b679-ff0f113b2eb3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\etripator.c" />
-    <ClCompile Include="..\..\irq.c" />
-    <ClCompile Include="..\..\labels.c" />
-    <ClCompile Include="..\..\opcodes.c" />
-    <ClCompile Include="..\..\options.c" />
-    <ClCompile Include="..\..\section.c" />
     <ClCompile Include="getopt1.c">
       <Filter>platform\windows</Filter>
     </ClCompile>
     <ClCompile Include="getopt.c">
       <Filter>platform\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\cfg.c" />
-    <ClCompile Include="..\..\message.c" />
-    <ClCompile Include="..\..\decode.c" />
-    <ClCompile Include="..\..\memory.c" />
-    <ClCompile Include="..\..\cfgext.c" />
-    <ClCompile Include="..\..\appconfig.c" />
-    <ClCompile Include="..\..\hashtable.c" />
     <ClCompile Include="..\..\random.c" />
-    <ClCompile Include="..\..\array.c" />
+    <ClCompile Include="..\..\message.c" />
+    <ClCompile Include="..\..\storage.c" />
     <ClCompile Include="..\..\arch\pce.c">
-      <Filter>arch</Filter>
+      <Filter>architecture</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\error.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\irq.h" />
-    <ClInclude Include="..\..\labels.h" />
-    <ClInclude Include="..\..\opcodes.h" />
-    <ClInclude Include="..\..\options.h" />
-    <ClInclude Include="..\..\section.h" />
     <ClInclude Include="getopt_win.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
@@ -52,21 +37,19 @@
     <ClInclude Include="stdint.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\cfg.h" />
     <ClInclude Include="config_win.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\message.h" />
-    <ClInclude Include="..\..\decode.h" />
-    <ClInclude Include="..\..\memory.h" />
-    <ClInclude Include="..\..\cfgext.h" />
-    <ClInclude Include="..\..\appconfig.h" />
-    <ClInclude Include="..\..\hashtable.h" />
     <ClInclude Include="..\..\random.h" />
-    <ClInclude Include="..\..\array.h" />
+    <ClInclude Include="..\..\config.h" />
+    <ClInclude Include="..\..\message.h" />
+    <ClInclude Include="..\..\memory.h" />
+    <ClInclude Include="..\..\storage.h" />
+    <ClInclude Include="..\..\architecture.h" />
     <ClInclude Include="..\..\arch\pce.h">
-      <Filter>arch</Filter>
+      <Filter>architecture</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\error.h" />
+    <ClInclude Include="..\..\enum.h" />
   </ItemGroup>
 </Project>

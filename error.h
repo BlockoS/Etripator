@@ -22,8 +22,12 @@
 
 BEGIN_ENUM(error)
 	ENUM(e_ok, "success")
-	ENUM(e_invalid_parameter, "invalid parameter")
-	ENUM(e_not_enough_memory, "not enough memory")
+	ENUM(e_invalid_parameter,     "invalid parameter")
+	ENUM(e_not_enough_memory,     "not enough memory")
+	ENUM(e_storage_id,            "invalid storage")
+	ENUM(e_storage_read,          "an error occurred while reading data from storage")
+	ENUM(e_storage_write,         "an error occurred while writing data to storage")
+	ENUM(e_operand_inconsistency, "inconsistency between instruction data size and operand count")
 END_ENUM(error)
 
 #endif // ERROR_H

@@ -20,6 +20,8 @@
 
 #include "config.h"
 
+// [todo] make it multithread friendly!
+
 /**
  * \brief Message types
  */

@@ -388,29 +388,25 @@ char processOpcode(SectionProcessor* iProcessor) {
 		
 		page = iProcessor->page;
 	}
+	else if(isFarJump(inst))
+	{
+		isJump = 1;
+		/* Extract page */
+		page  = (data[1] >> 5) & 0xff;
+		/* Build offset */
+		offset = (data[1] << 8) | data[0];		
+	}
 	else 
 	{
-		if(isFarJump(inst))
-		{
-			isJump = 1;
-			/* Extract page */
-			page  = (data[1] >> 5) & 0xff;
-			/* Build offset */
-			offset = (data[1] << 8) | data[0];
+		page   = 0;
+		offset = 0;
 			
-		}
-		else 
+		/* Unknown instructions are output as raw data 
+			* (ie) .db XX
+			*/
+		if(pce_opcode[inst].type == 22)
 		{
-			page   = 0;
-			offset = 0;
-			
-			/* Unknown instructions are output as raw data 
-			 * (ie) .db XX
-			 */
-			if(pce_opcode[inst].type == 22)
-			{
-				data[0] = inst;
-			}
+			data[0] = inst;
 		}
 	}
 
