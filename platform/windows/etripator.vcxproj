@@ -59,9 +59,9 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <CompileAs>CompileAsC</CompileAs>
-      <ExceptionHandling>false</ExceptionHandling>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -85,8 +85,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CompileAs>CompileAsC</CompileAs>
-      <ExceptionHandling>false</ExceptionHandling>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,27 +101,18 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\arch\pce.c" />
-    <ClCompile Include="..\..\error.c" />
-    <ClCompile Include="..\..\etripator.c" />
-    <ClCompile Include="..\..\message.c" />
+    <ClCompile Include="..\..\etripator.cpp" />
+    <ClCompile Include="..\..\ram.cpp" />
     <ClCompile Include="..\..\random.c" />
-    <ClCompile Include="..\..\storage.c" />
-    <ClCompile Include="getopt.c" />
-    <ClCompile Include="getopt1.c" />
+    <ClCompile Include="..\..\storage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\architecture.h" />
-    <ClInclude Include="..\..\arch\pce.h" />
     <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\enum.h" />
-    <ClInclude Include="..\..\error.h" />
     <ClInclude Include="..\..\memory.h" />
-    <ClInclude Include="..\..\message.h" />
+    <ClInclude Include="..\..\ram.h" />
     <ClInclude Include="..\..\random.h" />
     <ClInclude Include="..\..\storage.h" />
     <ClInclude Include="config_win.h" />
-    <ClInclude Include="getopt_win.h" />
     <ClInclude Include="inttypes.h" />
     <ClInclude Include="stdint.h" />
   </ItemGroup>

@@ -12,25 +12,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\etripator.c" />
-    <ClCompile Include="getopt1.c">
-      <Filter>platform\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="getopt.c">
-      <Filter>platform\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\random.c" />
-    <ClCompile Include="..\..\message.c" />
-    <ClCompile Include="..\..\storage.c" />
-    <ClCompile Include="..\..\arch\pce.c">
-      <Filter>architecture</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\error.c" />
+    <ClCompile Include="..\..\storage.cpp" />
+    <ClCompile Include="..\..\etripator.cpp" />
+    <ClCompile Include="..\..\ram.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="getopt_win.h">
-      <Filter>platform\windows</Filter>
-    </ClInclude>
     <ClInclude Include="inttypes.h">
       <Filter>platform\windows</Filter>
     </ClInclude>
@@ -42,14 +29,8 @@
     </ClInclude>
     <ClInclude Include="..\..\random.h" />
     <ClInclude Include="..\..\config.h" />
-    <ClInclude Include="..\..\message.h" />
     <ClInclude Include="..\..\memory.h" />
     <ClInclude Include="..\..\storage.h" />
-    <ClInclude Include="..\..\architecture.h" />
-    <ClInclude Include="..\..\arch\pce.h">
-      <Filter>architecture</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\error.h" />
-    <ClInclude Include="..\..\enum.h" />
+    <ClInclude Include="..\..\ram.h" />
   </ItemGroup>
 </Project>

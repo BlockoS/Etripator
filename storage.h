@@ -19,40 +19,63 @@
 #define STORAGE_H
 
 #include "config.h"
-#include "error.h"
+#include <vector>
 
-/** \defgroup STORAGE_FLAGS Storage flag bit masks */
-/** @{ */
-/** Data can be read from storage. */
-#define STORAGE_READ      0x00000001U
-/** Data can be written to storage. */
-#define STORAGE_WRITE     0x00000002U
-/** Storage is volatile. */
-#define STORAGE_VOLATILE  0x00000004U
-/** @} */
-
-/** Test if a given flag is set. */
-#define storage_flag_test(s,bit) (((s).flag & (bit)) == (bit))
-
-/** Test if the storage s is readable. */
-#define storage_is_readable(s) storage_flag_test(s, STORAGE_READ)
-/** Test if the storage s is writable. */
-#define storage_is_writable(s) storage_flag_test(s, STORAGE_WRITE)
-/** Test if the storage s is volatile. */
-#define storage_is_volatile(s) storage_flag_test(s, STORAGE_VOLATILE)
-
-/**
- * Generic storage structure. Can be either RAM, ROM, floppy disk...
- */
-struct storage_t
+namespace Etripator
 {
-	/** Size in bytes. */
-	uint64_t size;
-	/** Flag \see STORAGE_FLAGS */
-	uint64_t flag;
+	//!
+	//! Generic storage structure. Can be either RAM, ROM, floppy disk...
+	//!
+	class Storage
+	{
+		public:
+			//! \defgroup STORAGE_FLAGS Storage flag bit masks
+			//! @{
+			//! Data can be read from storage.
+			static const uint64_t READ;
+			//! Data can be written to storage.
+			static const uint64_t WRITE;
+			//! Storage is volatile.
+			static const uint64_t VOLATILE;
+			//! @}
+		public:
+			//! Constructor
+			Storage();
+			//! Constructor
+			//! \param [in] size  Size in bytes
+			//! \param [in] flag  \see STORAGE_FLAGS
+			Storage(uint64_t size, uint64_t flag);
+			//! Destructor
+			virtual ~Storage();
 
-	error_t (*read )(struct storage_t* s, uint64_t address, size_t len, uint8_t* output, size_t *nread);
-	error_t (*write)(struct storage_t* s, uint64_t address, size_t len, uint8_t* input, size_t* nwritten);
+			//! Read bytes from storage
+			//! \param [in]  address  Physical address.
+			//! \param [in]  len      Length in bytes.
+			//! \param [out] output   Output buffer.
+			virtual bool Read(uint64_t address, size_t len, std::vector<uint8_t>& out) const = 0;
+
+			//! Write bytes from storage
+			//! \param [in] address  Physical address.
+			//! \param [in] len      Length in bytes.
+			//! \param [in] input    Input buffer.
+			virtual bool Write(uint64_t address, size_t len, const std::vector<uint8_t>& input) = 0;
+
+			//! Test if the storage s is readable.
+			bool IsReadable() const;
+			//! Test if the storage s is writable.
+			bool IsWritable() const;
+			//! Test if the storage s is volatile.
+			bool IsVolatile() const;
+
+			//! Storage size in bytes.
+			uint64_t Size() const;
+
+		protected:
+			//! Size in bytes.
+			uint64_t m_size;
+			//! Flag \see STORAGE_FLAGS
+			uint64_t m_flag;
+	};
 };
 
 #endif // STORAGE_H

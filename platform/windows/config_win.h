@@ -32,7 +32,6 @@
 #define strcasecmp _stricmp
 #define snprintf _snprintf
 
-#include "getopt_win.h"
 #include "stdint.h"
 
 #include <sys/types.h>
