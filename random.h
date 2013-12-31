@@ -18,6 +18,10 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** \brief George Marsaglia's random number generator.
  *  Its name stands for Complimentary-Multiply-With-Carry
  *  4096 is the initial random value.
@@ -30,5 +34,9 @@ unsigned long CMWC4096(void);
 
 /** \brief Initialize CMWC496 RNG */
 void SetupCMWC4096(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // RANDOM_H

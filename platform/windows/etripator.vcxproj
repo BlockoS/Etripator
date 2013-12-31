@@ -101,17 +101,17 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\commandLine.cpp" />
     <ClCompile Include="..\..\etripator.cpp" />
-    <ClCompile Include="..\..\ram.cpp" />
+    <ClCompile Include="..\..\memory.cpp" />
     <ClCompile Include="..\..\random.c" />
-    <ClCompile Include="..\..\storage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\commandLine.h" />
     <ClInclude Include="..\..\config.h" />
     <ClInclude Include="..\..\memory.h" />
-    <ClInclude Include="..\..\ram.h" />
+    <ClInclude Include="..\..\mmu.h" />
     <ClInclude Include="..\..\random.h" />
-    <ClInclude Include="..\..\storage.h" />
     <ClInclude Include="config_win.h" />
     <ClInclude Include="inttypes.h" />
     <ClInclude Include="stdint.h" />

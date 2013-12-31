@@ -18,6 +18,10 @@
 #include "config.h"
 #include "random.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static unsigned long Q[4096], c=362436;
 
 /** \brief Initialize CMWC496 RNG */
@@ -49,4 +53,8 @@ unsigned long CMWC4096(void)
 	c=(t>>32); t=(t&b)+c;
 	if(t>r) {c++; t=t-b;}
     return (Q[i]=(unsigned long)(r-t));
-} 
+}
+
+#ifdef __cplusplus
+}
+#endif
