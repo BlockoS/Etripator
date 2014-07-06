@@ -24,8 +24,11 @@ include_directories( ${LUA_INCLUDE_DIR}
                      ${JANSSON_INCLUDE_DIR}
                      . )
 
-set(ETRIPATOR_SOURCES
-    etripator.cpp)
+set( ETRIPATOR_SOURCES
+     parserUtils.cpp
+     parser.cpp
+     format.cpp
+     etripator.cpp )
 
 add_executable(etripator ${ETRIPATOR_SOURCES})
 target_link_libraries(etripator ${LUA_LIBRARY} 

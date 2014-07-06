@@ -21,7 +21,10 @@
 #if defined(_MSC_VER)
 #include "platform/windows/config_win.h"
 #else
+
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif // _GNU_SOURCE
 
 #include <stdlib.h>
 #include <stdio.h>

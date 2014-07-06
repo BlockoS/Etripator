@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+#include <string.h>
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -28,6 +30,10 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#include <iostream>
+#include "format.h"
+#include "parser.h"
 
 /* Main */
 int main(int argc, char** argv)
@@ -45,6 +51,17 @@ int main(int argc, char** argv)
 		"    { first=\"bozo\", second=\"plop\" },\n"
 		"}\n";
 
+    const char* text =
+	"{\n"
+    "    \"format\": {\n"
+    "        \"fmt_op\":          [ {\"op\": \"8b\"} ],\n"
+    "        \"fmt_op_b0\":       [ {\"op\": \"8b\"}, {\"b0\":  \"8b\"} ],\n"
+    "        \"fmt_op_b0_b1\":    [ {\"op\": \"8b\"}, {\"b0\":  \"8b\"}, {\"b1\":  \"8b\"} ],\n"
+    "        \"fmt_op_b0_w0\":    [ {\"op\": \"8b\"}, {\"b0\":  \"8b\"}, {\"w0\": \"16b\"} ],\n"
+    "        \"fmt_op_w0\":       [ {\"op\": \"8b\"}, {\"w0\": \"16b\"} ],\n"
+    "        \"fmt_op_w0_w1_w2\": [ {\"op\": \"1B\"}, {\"w0\":  \"2B\"}, {\"w1\": \"16b\"}, {\"w2\": \"2B\"} ]\n"
+    "    }\n"
+    "}\n";
 	/*
 	conf.mpr[3] = 3
 	conf.mpr[4] = 3
@@ -110,6 +127,43 @@ int main(int argc, char** argv)
 	lua_close(state);
 
 	// INFO_MSG("%s", get_error_string(e_invalid_parameter));
-
-	return res;
+    {
+        json_t *root;
+        json_error_t error;
+        
+        root = json_loads(text, 0, &error);
+        
+        if(!root)
+        {
+            std::cerr << error.line << " : " << error.text << std::endl;
+            return 1;
+        }
+        
+        json_t *format = json_object_get(root, "format");
+        void *iter;
+        for(iter=json_object_iter(format); NULL!=iter; iter=json_object_iter_next(format,iter))
+        {
+            const char* key = json_object_iter_key(iter);
+            json_t*   value = json_object_iter_value(iter);
+            
+            Etripator::Format fmt;
+            FormatParseJSON(key, value, fmt);
+            
+            std::cout << fmt.identifier() << " ";
+            for(size_t i=0; i<fmt.argumentCount(); i++)
+            {
+                std::string name;
+                size_t size;
+                if(fmt.argument(i, name, size))
+                {
+                    std::cout << "[" << name << ", " << size << "] ";
+                }
+            }
+            std::cout << std::endl;
+        }
+        
+        json_decref(root);
+    }
+    
+    return res;
 }
