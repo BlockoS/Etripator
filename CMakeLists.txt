@@ -2,34 +2,42 @@ cmake_minimum_required (VERSION 2.8)
 
 project(Etripator)
 
+# Force build type to Debug if none was specified.
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-
-if(MSVC)
-    add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
-endif(MSVC)
+set(LIBRARY_OUTPUT_PATH    "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+set(ARCHIVE_OUTPUT_PATH    "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 
 find_package(Lua52)
 find_package(Jansson)
+find_package(UnitTest++)
 
 set(Etripator_VERSION 1.0)
 set(PROJECT_NAME Etripator)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
 
 include_directories( ${LUA_INCLUDE_DIR}
                      ${JANSSON_INCLUDE_DIR}
-                     . )
+                     include/ )
 
-set( ETRIPATOR_SOURCES
-     parserUtils.cpp
-     parser.cpp
-     format.cpp
-     etripator.cpp )
+set( Etripator_SRC
+  src/memory.cpp
+  src/parser/utils.cpp )
+add_library( etripator STATIC ${Etripator_SRC} )
 
-add_executable(etripator ${ETRIPATOR_SOURCES})
-target_link_libraries(etripator ${LUA_LIBRARY} 
-                                ${JANSSON_LIBRARY} )
+if(BUILD_TESTS)
+  find_package(UnitTest++)
+  include_directories( ${UNITTEST++_INCLUDE_DIR} )
+  set( Etripator_TEST_SRC
+       src/test/RunTests.cpp
+       src/test/memory.t.cpp
+       src/test/parser/utils.t.cpp )
+  add_executable( RunTests ${Etripator_TEST_SRC} )
+  target_link_libraries( RunTests etripator )
+  target_link_libraries( RunTests ${UNITTEST++_LIBRARY} )
+endif()
