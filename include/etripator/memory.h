@@ -43,8 +43,24 @@ namespace etripator {
 	/// repeated (goes back to the beginning).
 	enum WrapMode
 	{
+	    /// Any byte read or written outside of the memory boundaries
+	    /// will be equal to 0xff.
 	    Clamp,
+	    /// The offset will loop through the memory boundaries.
 	    Repeat
+	};
+	/// Memory operation result.
+	struct Result
+	{
+	    /// Number of bytes read or written outside of the memory area.
+	    size_t overflow;
+	    /// Access validity.
+	    /// @b true if the access right was valid regarding the requested
+	    /// operation. For example, this field will be false for @b write 
+	    /// operations on a @b ReadOnly memory.
+	    bool   access;
+	    /// Total number of bytes read or written.
+	    size_t bytes;
 	};
     public:
 	/// Default constructor.
@@ -68,14 +84,25 @@ namespace etripator {
 	/// Read bytes from memory.
 	/// \param [in]  address  Physical address.
 	/// \param [in]  len      Length in bytes.
-	/// \param [out] output   Output buffer.
-	/// \return false if the memory is write only.
-	bool read(uint64_t address, size_t len, std::vector<uint8_t>& out) const;
+	/// \param [out] output   Output data pointer.
+	/// \return Result.
+	Result read(uint64_t address, size_t len, void* output) const;
 	/// Write bytes to memory.
 	/// \param [in] address  Physical address.
 	/// \param [in] len      Length in bytes.
-	/// \param [in] input    Input buffer.
-	bool write(uint64_t address, size_t len, std::vector<uint8_t> const& input);
+	/// \param [in] input    Input data pointer.
+	/// \return Result.
+        Result write(uint64_t address, size_t len, const void* input);
+	/// Flash memory.
+	/// Access rights are ignored.
+	/// \param [in] in  Pointer to source data.
+	/// \param [in] len Number of bytes to be written.
+	/// \return Number of bytes written.
+	size_t flash(size_t len, const void* in);
+	/// Dump whole memory.
+	/// Access rights are ignores.
+	/// \param [out] out Output byte vector.
+	void dump(std::vector<uint8_t>& out);
 	/// Word size in bytes.
 	size_t wordSize() const;
 	/// Word count.

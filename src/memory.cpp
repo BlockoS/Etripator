@@ -66,73 +66,144 @@ namespace etripator {
     /// Read bytes from memory.
     /// \param [in]  address  Physical address.
     /// \param [in]  len      Length in bytes.
-    /// \param [out] output   Output buffer.
-    /// \return false if the memory is write only.
-    bool Memory::read(uint64_t address, size_t len, std::vector<uint8_t>& out) const
+    /// \param [out] output   Output data pointer.
+    /// \return Result.
+    Memory::Result Memory::read(uint64_t address, size_t len, void* out) const
     {
-	out.resize(len);
-	uint64_t src;
-	uint64_t dst;
-	src = address;
-	for(dst=0; dst<len; )
+	Memory::Result res;
+
+	res.overflow = 0;
+	res.bytes    = 0;
+	res.access   = (Memory::WriteOnly != m_access);
+
+	if(false == res.access)
 	{
-	    if(src < m_buffer.size())
+	    return res;
+	}
+	res.bytes = len;
+	uint8_t* ptr = reinterpret_cast<uint8_t*>(out);
+	if((address + len) > m_buffer.size())
+	{
+	    size_t count;
+	    if(address  >= m_buffer.size())
 	    {
-		size_t srcLen = m_buffer.size() - src;
-		size_t dstLen = len - dst;
-		size_t count  = (srcLen < dstLen) ? srcLen : dstLen;
-		std::copy_n(m_buffer.begin()+src, count, out.begin()+dst);
-		src += count;
-		dst += count;
+		count = 0;
 	    }
-	    
-	    if(dst < len)
+	    else
 	    {
-	       	if(Memory::Clamp == m_wrap)
+		count = m_buffer.size() - address;
+		std::copy_n(m_buffer.begin()+address, count, ptr);
+	    }
+	    res.overflow = len - count;	    
+	    if(Memory::Clamp == m_wrap)
+	    {
+		std::fill(ptr+count, ptr+len, 0xff);
+	    }
+	    else if(Memory::Repeat == m_wrap)
+	    {
+		size_t src = (address + count) % m_buffer.size();
+		size_t dst;
+		for(dst=count; dst<len; dst+=count)
 		{
-		    std::fill(out.begin()+dst, out.end(), 0xff);
-		    dst = len;
-	        }
-	        else if(Memory::Repeat == m_wrap)
-	        {
-		    src = 0;
-	        }
+		    count = (len - dst);
+		    count = ((src+count) > m_buffer.size()) ? (m_buffer.size()-src) : count;
+		    std::copy_n(m_buffer.begin()+src, count, ptr+dst);
+		    src = (src + count) % m_buffer.size(); 
+		}
 	    }
 	}
-	return (Memory::WriteOnly != m_access);
+	else
+	{
+	    res.overflow = 0;
+	    std::copy_n(m_buffer.begin() + address, len, ptr);
+	}
+	return res;
     }
     /// Write bytes to memory.
     /// \param [in] address  Physical address.
     /// \param [in] len      Length in bytes.
-    /// \param [in] input    Input buffer.
-    bool Memory::write(uint64_t address, size_t len, std::vector<uint8_t> const& input)
+    /// \param [in] input    Input data pointer.
+    /// \return Result.
+    Memory::Result Memory::write(uint64_t address, size_t len, const void* input)
     {
-	uint64_t src;
-	uint64_t dst;
-	for(src=0, dst=address; src<len; )
+	Memory::Result res;
+	res.overflow = 0;
+	res.bytes    = 0;
+	res.access   = (Memory::ReadOnly != m_access);
+	
+	if(false == res.access)
 	{
-	    if(dst < m_buffer.size())
+	    return res;
+	}
+
+	res.bytes = len;
+
+	const uint8_t* ptr = reinterpret_cast<const uint8_t*>(input);
+	if((address+len) > m_buffer.size())
+	{
+	    if(Memory::Repeat == m_wrap)
 	    {
-		size_t srcLen = input.size() - src;
-		size_t dstLen = m_buffer.size() - dst;
-		size_t count  = (srcLen < dstLen) ? srcLen : dstLen;
-		std::copy_n(input.begin()+src, count, m_buffer.begin()+dst);
-		src += count;
-		dst += count;
+		size_t count = (address + len) % m_buffer.size();
+		uint64_t offset = len - count;
+		std::copy_n(ptr+offset, count, m_buffer.begin());
+
+		if(offset > m_buffer.size())
+		{
+		    std::copy_n(ptr, m_buffer.size()-count, m_buffer.begin()+count);
+		}
+		else
+		{
+		    offset = m_buffer.size() - offset;
+		    std::copy_n(ptr, len-count, m_buffer.begin()+offset);
+		}
+		if(address  > m_buffer.size())
+		{
+		    res.overflow = len;
+		}
+		else
+		{
+		    res.overflow = len - (m_buffer.size() - address);
+		}
 	    }
-	    if(dst >= m_buffer.size())
+	    else
 	    {
-		if(Memory::Clamp == m_wrap)
+		size_t count;
+		if(address >= m_buffer.size())
 		{
-		    src = len;
+		    count = 0;
 		}
-		else if(Memory::Repeat == m_wrap)
+		else
 		{
-		    dst = 0;
+		    count = m_buffer.size() - address;
+		    std::copy_n(ptr, count, m_buffer.begin() + address);
 		}
+		res.overflow = len - count;
 	    }
 	}
-	return (Memory::ReadOnly != m_access);
+	else
+	{
+	    std::copy_n(ptr, len, m_buffer.begin());
+	}
+	return res;
+    }
+    /// Flash memory.
+    /// Access rights are ignored.
+    /// \param [in] in  Pointer to source data.
+    /// \param [in] len Number of bytes to be written.
+    /// \return Number of bytes written.
+    size_t Memory::flash(size_t len, const void* in)
+    {
+	size_t count = (len > m_buffer.size()) ? m_buffer.size() : len;
+	std::copy_n(reinterpret_cast<const uint8_t*>(in), count, m_buffer.begin());
+	return count;
+    }
+    /// Dump whole memory.
+    /// Access rights are ignores.
+    /// \param [out] out Output byte vector.
+    void Memory::dump(std::vector<uint8_t>& out)
+    {
+	out.resize(m_buffer.size());
+	std::copy(m_buffer.begin(), m_buffer.end(), out.begin());
     }
     /// Word size in bytes.
     size_t Memory::wordSize() const
