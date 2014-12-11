@@ -182,7 +182,7 @@ namespace etripator {
 	}
 	else
 	{
-	    std::copy_n(ptr, len, m_buffer.begin());
+	    std::copy_n(ptr, len, m_buffer.begin() + address);
 	}
 	return res;
     }
