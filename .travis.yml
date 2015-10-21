@@ -15,4 +15,4 @@ addons:
       name: BlockoS/Etripator
     notification_email: cruz.vincent@gmail.com
     build_command: "make"
-    branch_pattern: master
+    branch_pattern: v0.5
