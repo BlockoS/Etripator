@@ -24,55 +24,69 @@
 #include "memorymap.h"
 
 /**
- * \todo Rename
+ * Decoder.
  */
-struct SectionProcessor_
+typedef struct
 {
-    Section   *processed; /* Section being processed */
-    MemoryMap *memmap;    /* Memory map */
-    FILE      *out;       /* Output */
+     /** Section being processed. */
+    Section *section;
+    /** Memory map. */
+    MemoryMap *memmap;
+    /** Output. */
+    FILE *out;
+    /** Current physical address. */
+    size_t physicalAddr;
+    /** Curren logical address. */
+    uint16_t logicalAddr;
+    /** Current offset (number of bytes processed so far). */
+    size_t offset;
+    /** Label repository. */
+    LabelRepository* labelRepository;
+    /** Data buffer
+     *  Used for raw binary data output.
+     */
+    uint8_t *buffer;
+} Decoder;
 
-    size_t   physicalAddr; /* Physical address. */
-    uint16_t logicalAddr;  /* Logical address. */
-
-    size_t   offset; /* Current section offset */
-
-    LabelRepository* labelRepository; /* label repository for this section */
-
-    /* Used for raw binary data output */
-    uint8_t *buffer;       /* Data buffer */
-};
-typedef struct SectionProcessor_ SectionProcessor;
-
-/*
- * Initialize section processor
- * \return 1 upon success, 0 otherwise.
+/**
+ * Initialize decoder.
+ * \param [out] decoder Decoder.
+ * \return 1 upon success, 0 if an error occured.
  */
-int initializeSectionProcessor(SectionProcessor* processor);
+int initializeDecoder(Decoder *decoder);
 
-/*
- * Reset section processor
+/**
+ * Reset decoder.
+ * \param [in]  memmap  Memory map.
+ * \param [in]  out     File output.
+ * \param [in]  section Current section being decoded.
+ * \param [out] decoder Decoder.
  */
-void resetSectionProcessor(MemoryMap*, FILE*, Section*, SectionProcessor*);
-  
-/*
- * Delete section processor
- */
-void deleteSectionProcessor(SectionProcessor*);
+void resetDecoder(MemoryMap* memmap, FILE *out, Section *section, Decoder *decoder);
 
-/*
+/**
+ * Delete decoder.
+ * \param [in,out] decoder Decoder.
+ */
+void deleteDecoder(Decoder *decoder);
+
+/**
  * Process data section
+ * \param [in,out] decoder Decoder.
+ * \return 1 upon success, 0 if an error occured.
  */
-int processDataSection(SectionProcessor* iProcessor);
+int processDataSection(Decoder *decoder);
 
-/* 
+/**
  * Parse section to identify potential labels 
+ * \param [in,out] decoder Decoder.
  */
-int extractLabels(SectionProcessor* processor);
+int extractLabels(Decoder *decoder);
 
-/*
+/**
  * Process opcode
+ * \param [in,out] decoder Decoder.
  */
-char processOpcode(SectionProcessor* processor);
+char processOpcode(Decoder *decoder);
 
 #endif // DECODE_H

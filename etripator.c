@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     Section* section;
     size_t sectionCount;
 
-    SectionProcessor processor;
+    Decoder decoder;
 
     MemoryMap memmap;
 
@@ -134,13 +134,13 @@ int main(int argc, char** argv)
         /*  Data will be loaded during section disassembly */
     }
 
-    /* Initialize section processor */
-    initializeSectionProcessor(&processor);
+    /* Initialize decoder */
+    initializeDecoder(&decoder);
 
     /* Load labels */
     if(NULL != cmdOptions.labelsFileName)
     {
-        ret = loadLabels(cmdOptions.labelsFileName, processor.labelRepository);
+        ret = loadLabels(cmdOptions.labelsFileName, decoder.labelRepository);
         if(0 == ret)
         {
             ERROR_MSG("An error occured while loading labels from %s : %s", cmdOptions.labelsFileName, strerror(errno));
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
     /* Add section name to label repository. */
     for(i=0; i<sectionCount; ++i)
     {
-        ret = addLabel(processor.labelRepository, section[i].name, section[i].org, (section[i].bank << 13) | (section[i].org & 0x1fff));
+        ret = addLabel(decoder.labelRepository, section[i].name, section[i].org, (section[i].bank << 13) | (section[i].org & 0x1fff));
         if(0 == ret)
         {
             ERROR_MSG("Failed to add section name (%s) to labels", section[i].name);
@@ -202,15 +202,15 @@ int main(int argc, char** argv)
                           section[i].org);
         }
 
-        /* Reset section processor */
-        resetSectionProcessor(&memmap, out, &section[i], &processor);
+        /* Reset decoder */
+        resetDecoder(&memmap, out, &section[i], &decoder);
 
         if(CODE == section[i].type)
         {
             char eor;
             
             /* Extract labels */
-            ret = extractLabels(&processor);
+            ret = extractLabels(&decoder);
             if(0 == ret)
             {
                 goto error_4;
@@ -219,10 +219,10 @@ int main(int argc, char** argv)
             /* Process opcodes */
             do 
             {
-                eor = processOpcode(&processor);
+                eor = processOpcode(&decoder);
                 if(!cmdOptions.extractIRQ)
                 {
-                    if(processor.offset >= processor.processed->size)
+                    if(decoder.offset >= decoder.section->size)
                         eor = 1;
                     else
                         eor = 0;
@@ -231,13 +231,13 @@ int main(int argc, char** argv)
         }
         else
         {
-            ret = processDataSection(&processor);
+            ret = processDataSection(&decoder);
             if(0 == ret)
             {
-                
+                // [todo]   
             }
         }
-        fputc('\n', processor.out);
+        fputc('\n', decoder.out);
 
         fclose(out);
         out = NULL;
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
     failure = 0;
 
 error_4:
-    deleteSectionProcessor(&processor);
+    deleteDecoder(&decoder);
 error_2:
     destroyMemoryMap(&memmap);
 error_1:

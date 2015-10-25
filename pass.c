@@ -19,8 +19,8 @@
 #include "message.h"
 
 /**
- * (todo)
- * \param [in] pass (todo)
+ * Run pass.
+ * \param [in] pass Pass callbacks and data.
  * \return 1 if the pass was succesfully performed, or 0 if an error occured.
  */
 int perform(Pass *pass)

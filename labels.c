@@ -81,6 +81,11 @@ LabelRepository* createLabelRepository()
  */
 void deleteLabelRepository(LabelRepository* repository)
 {
+    if(NULL == repository)
+    {
+        return;
+    }
+    
     repository->size  = 0;
     repository->last  = 0;
 
@@ -97,10 +102,12 @@ void deleteLabelRepository(LabelRepository* repository)
         free(repository->nameBuffer);
         repository->nameBuffer = NULL;
     }
+    
+    free(repository);
 }
 
 /* Set name and add it to label name buffer */
-static int setLabelName(LabelRepository* repository, Label *label, const char* name)
+static int setLabelName(LabelRepository* repository, Label* label, const char* name)
 {
     char *tmp;
     size_t nameLen = strlen(name) + 1;

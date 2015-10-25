@@ -20,102 +20,108 @@
 #include "opcodes.h"
 
 /**
- * Initialize section processor
- * \return 1 upon success, 0 otherwise.
+ * Initialize decoder.
+ * \param [out] decoder Decoder.
+ * \return 1 upon success, 0 if an error occured.
  */
-int initializeSectionProcessor(SectionProcessor* processor)
+int initializeDecoder(Decoder *decoder)
 {
-    processor->processed = NULL;
-    processor->memmap    = NULL;
-    processor->out       = NULL;
+    decoder->section = NULL;
+    decoder->memmap  = NULL;
+    decoder->out     = NULL;
 
-    processor->physicalAddr = 0;
-    processor->logicalAddr = 0;
+    decoder->physicalAddr = 0;
+    decoder->logicalAddr = 0;
+    decoder-> offset = 0;
 
-    processor-> offset = 0;
+    decoder->buffer = NULL;
 
-    processor->buffer = NULL;
-
-    processor->labelRepository = createLabelRepository();
-    if(NULL == processor->labelRepository)
+    decoder->labelRepository = createLabelRepository();
+    if(NULL == decoder->labelRepository)
     {
+        ERROR_MSG("An error occured while creating label repository.");
         return 0;
     }
     return 1;
 }
 
-/*
- * Reset section processor
+/**
+ * Reset decoder.
+ * \param [in]  memmap  Memory map.
+ * \param [in]  out     File output.
+ * \param [in]  section Current section being decoded.
+ * \param [out] decoder Decoder.
  */
-void resetSectionProcessor(MemoryMap* iMemmap, FILE* iOut, Section* iProcessed, SectionProcessor* iProcessor)
+void resetDecoder(MemoryMap* memmap, FILE *out, Section *section, Decoder *decoder)
 {
-    iProcessor->processed = iProcessed;
-    iProcessor->memmap    = iMemmap;
-    iProcessor->out       = iOut;
+    decoder->section = section;
+    decoder->memmap  = memmap;
+    decoder->out     = out;
 
-    iProcessor->physicalAddr = (iProcessed->bank << 13) | (iProcessed->org & 0x1fff);
-    iProcessor->logicalAddr  = iProcessed->org;
-
-    iProcessor->offset = 0;
+    decoder->physicalAddr = (section->bank << 13) | (section->org & 0x1fff);
+    decoder->logicalAddr  = section->org;
+    decoder->offset = 0;
 }
   
 /**
- * Delete section processor
+ * Delete decoder.
+ * \param [in,out] decoder Decoder.
  */
-void deleteSectionProcessor(SectionProcessor* processor)
+void deleteDecoder(Decoder *decoder)
 {
-    if(NULL != processor->buffer)
+    if(NULL != decoder->buffer)
     {
-        free(processor->buffer);
-        processor->buffer = NULL;
+        free(decoder->buffer);
+        decoder->buffer = NULL;
     }
-    if(NULL != processor->labelRepository)
+    if(NULL != decoder->labelRepository)
     {
-        deleteLabelRepository(processor->labelRepository);
-        free(processor->labelRepository);
-        processor->labelRepository = NULL;
+        deleteLabelRepository(decoder->labelRepository);
+        decoder->labelRepository = NULL;
     }
 }
 
-/*
+/**
  * Process data section
+ * \param [in,out] decoder Decoder.
+ * \return 1 upon success, 0 if an error occured.
  */
-int processDataSection(SectionProcessor* processor)
+int processDataSection(Decoder *decoder)
 {
     uint8_t data;
     int     i;
     off_t   addr;
-    if(processor->processed->type == INC_DATA)
+    if(decoder->section->type == INC_DATA)
     {
         int j;
-        fprintf(processor->out, "%s:\n", processor->processed->name);
-        for(i=processor->processed->size, addr=processor->physicalAddr; i>0; )
+        fprintf(decoder->out, "%s:\n", decoder->section->name);
+        for(i=decoder->section->size, addr=decoder->physicalAddr; i>0; )
         {
-            fprintf(processor->out, "    .db ");
+            fprintf(decoder->out, "    .db ");
 
             for(j=0; (i>0) && (j<8); j++, i--)
             {
-                data = readByte(processor->memmap, addr++);
-                fprintf(processor->out, "$%02x%c", data, ((j<7) && (i>1)) ? ',' : '\n');
+                data = readByte(decoder->memmap, addr++);
+                fprintf(decoder->out, "$%02x%c", data, ((j<7) && (i>1)) ? ',' : '\n');
             }
         }
     }
     else
     {
-        for(i=processor->processed->size, addr=processor->physicalAddr; i>0; i--)
+        for(i=decoder->section->size, addr=decoder->physicalAddr; i>0; i--)
         {
-            data = readByte(processor->memmap, addr++);
-            fwrite(&data, 1, 1, processor->out);
+            data = readByte(decoder->memmap, addr++);
+            fwrite(&data, 1, 1, decoder->out);
         }
     }
     return 1;
 }
 
 /**
- * Parse section to identify potential labels
- * \return 1 upon success, 0 if an error occured.
+ * Parse section to identify potential labels 
+ * \param [in,out] decoder Decoder.
  */
-int extractLabels(SectionProcessor* processor)
+int extractLabels(Decoder *decoder)
 {
     int eor, i;
     uint8_t inst;
@@ -126,8 +132,8 @@ int extractLabels(SectionProcessor* processor)
     uint16_t logical;
     size_t   physical;
     
-    LabelRepository *repository = processor->labelRepository;
-    Section *section = processor->processed;
+    LabelRepository *repository = decoder->labelRepository;
+    Section *section = decoder->section;
 
     if(CODE != section->type)
     {
@@ -135,8 +141,8 @@ int extractLabels(SectionProcessor* processor)
     }
     
     offset   = 0;
-    logical  = processor->logicalAddr;
-    physical = processor->physicalAddr;
+    logical  = decoder->logicalAddr;
+    physical = decoder->physicalAddr;
 
     printf("\n%s:\n", section->name);
 
@@ -150,11 +156,11 @@ int extractLabels(SectionProcessor* processor)
     while(!eor)
     {
         /* Read instruction */
-        inst = readByte(processor->memmap, physical);
+        inst = readByte(decoder->memmap, physical);
         /* Read data (if any) */
         for(i=0; i<(pce_opcode[inst].size-1); i++)
         {
-            data[i] = readByte(processor->memmap, physical+i+1);
+            data[i] = readByte(decoder->memmap, physical+i+1);
         }
 
         if(isLocalJump(inst))
@@ -174,7 +180,7 @@ int extractLabels(SectionProcessor* processor)
             delta += pce_opcode[inst].size;
 
             /* Create label name */
-            snprintf(buffer, 32, "l%04x_%02d", logical+delta, processor->processed->id);
+            snprintf(buffer, 32, "l%04x_%02d", logical+delta, decoder->section->id);
 
             /* Insert offset to repository */
             if(0 == addLabel(repository, buffer, logical+delta, physical+delta))
@@ -192,7 +198,7 @@ int extractLabels(SectionProcessor* processor)
                 size_t   physicalJump = INVALID_PHYSICAL_ADDRESS;
                 
                 /* Create label name */
-                snprintf(buffer, 32, "l%04x_%02d", jump, processor->processed->id);
+                snprintf(buffer, 32, "l%04x_%02d", jump, decoder->section->id);
                 /* Try to compute physical address if the logical jump address is in the range of current logical page*/
                 if((jump >> 13) == (logical >> 13))
                 {
@@ -231,10 +237,11 @@ int extractLabels(SectionProcessor* processor)
 
 static const char* spacing = "          ";
 
-/*
+/**
  * Process opcode
+ * \param [in,out] decoder Decoder.
  */
-char processOpcode(SectionProcessor* processor)
+char processOpcode(Decoder *decoder)
 {
     int i, delta;
     uint8_t inst, data[6], isJump;
@@ -247,29 +254,27 @@ char processOpcode(SectionProcessor* processor)
 
     memset(data, 0, 6);
 
-    physical    = processor->physicalAddr + processor->offset;
-    logical     = processor->logicalAddr  + processor->offset;
+    physical = decoder->physicalAddr + decoder->offset;
+    logical  = decoder->logicalAddr  + decoder->offset;
 
     /* Opcode */
-    inst = readByte(processor->memmap, physical);
+    inst = readByte(decoder->memmap, physical);
     
     nextLogical = logical + pce_opcode[inst].size;
     
     /* Is there a label ? */
-    if(findLabelByPhysicalAddress(processor->labelRepository, physical, &name))
+    if(findLabelByPhysicalAddress(decoder->labelRepository, physical, &name))
     {
         /* Print label*/
-        fprintf(processor->out, "%s:\n", name);
+        fprintf(decoder->out, "%s:\n", name);
     }
 
     /* Front spacing */
-    fwrite(spacing, 1, 10, processor->out);
-
+    fwrite(spacing, 1, 10, decoder->out);
     /* Print opcode sting */
-    fwrite(pce_opcode[inst].name, 1, 4, processor->out);
-    
+    fwrite(pce_opcode[inst].name, 1, 4, decoder->out);
     /* Add spacing */  
-    fwrite(spacing, 1, 4, processor->out);
+    fwrite(spacing, 1, 4, decoder->out);
 
     /* End Of Routine (eor) is set to 1 if the instruction is RTI or RTS */
     eor = ((inst == 64) || (inst == 96));
@@ -279,11 +284,11 @@ char processOpcode(SectionProcessor* processor)
     {
         for(i=0; i<(pce_opcode[inst].size-1); i++)
         {
-            data[i] = readByte(processor->memmap, physical + i + 1);
+            data[i] = readByte(decoder->memmap, physical + i + 1);
         }
     }
 
-    processor->offset += pce_opcode[inst].size;
+    decoder->offset += pce_opcode[inst].size;
     logical = nextLogical;
 
     /* Swap LSB and MSB for words */
@@ -344,26 +349,26 @@ char processOpcode(SectionProcessor* processor)
 
     if(pce_opcode[inst].type == 1)
     {
-        fputc('A', processor->out);
+        fputc('A', decoder->out);
     }
     else if(isJump)
     {
         // [todo] This may change if we keep track of the MPR registers
         if((offset & 0xffffe000) == (logical & 0xffffe000))
         {
-            findLabelByPhysicalAddress(processor->labelRepository, (physical & 0xffffe000) | (offset & 0x1fff), &name);
+            findLabelByPhysicalAddress(decoder->labelRepository, (physical & 0xffffe000) | (offset & 0x1fff), &name);
         }
         else
         {
-            findLabelByLogicalAddress(processor->labelRepository, offset, &name);
+            findLabelByLogicalAddress(decoder->labelRepository, offset, &name);
         }
      
         /* BBR* and BBS* */
      	if((inst & 0x0F) == 0x0F)
         {
-            fprintf(processor->out, pce_opstring[pce_opcode[inst].type][0], data[0]);
+            fprintf(decoder->out, pce_opstring[pce_opcode[inst].type][0], data[0]);
         }
-        fwrite(name, 1, strlen(name), processor->out);
+        fwrite(name, 1, strlen(name), decoder->out);
     }
     else
     {
@@ -381,10 +386,10 @@ char processOpcode(SectionProcessor* processor)
         {
             for(i=0; pce_opstring[pce_opcode[inst].type][i] != NULL; ++i)
             {
-                fprintf(processor->out, pce_opstring[pce_opcode[inst].type][i], data[i]);
+                fprintf(decoder->out, pce_opstring[pce_opcode[inst].type][i], data[i]);
             }
         }        
     }
-    fputc('\n', processor->out);
+    fputc('\n', decoder->out);
     return eor;
 }

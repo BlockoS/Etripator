@@ -19,32 +19,42 @@
 #define PASS_H
 
 /**
- * (todo)
+ * Called before the loop.
+ * Returns 1 upon success or 0 if and error occured.
  */
 typedef int (*initialize_callback)(void *callback_data);
 /**
- * (todo)
+ * Perform pass iteration.
+ * @note Return value:
+ *      * < 0 if an error occured
+ *      *   0 for the last loop iteration.
+ *      * > 0 upon success and another loop iteration needs to be performed.
  */
 typedef int (*iterate_callback)(void *callback_data);
 /**
- * (todo)
+ * Called after the loop.
+ * Returns 1 upon success or 0 if and error occured.
  */
 typedef int (*finalize_callback)(void *callback_data);
 
 /**
- * (todo)
+ * Pass callbacks and payload.
  */
 typedef struct
 {
+    /** Init. */
     initialize_callback initialize;
+    /** Loop iterator. */
     iterate_callback iterate;
+    /** Finalize. */
     finalize_callback finalize;
+    /** Callback data. */
     void *data;
 } Pass;
 
 /**
- * (todo)
- * \param [in] pass (todo)
+ * Run pass.
+ * \param [in] pass Pass callbacks and data.
  * \return 1 if the pass was succesfully performed, or 0 if an error occured.
  */
 int perform(Pass *pass);
