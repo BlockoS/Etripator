@@ -20,7 +20,9 @@ OBJDIR := $(OUTDIR)/obj
 
 LIBS   :=  -lm
 
-EXE_SRC := message.c pass.c decode.c cfg.c section.c opcodes.c labels.c labelsloader.c irq.c memory.c memorymap.c rom.c cd.c options.c etripator.c
+PCE_SRC := arch/pce/labels.c
+
+EXE_SRC := $(PCE_SRC) message.c pass.c decode.c cfg.c section.c opcodes.c labels.c labelsloader.c irq.c memory.c memorymap.c rom.c cd.c options.c etripator.c
 OBJS    := $(EXE_SRC:.c=.o)
 EXE_OBJ := $(addprefix $(OBJDIR)/, $(OBJS))
 EXE     := $(OUTDIR)/etripator
@@ -41,6 +43,7 @@ $(EXE): $(EXE_OBJ)
 
 $(OBJDIR)/%.o: %.c
 	@$(ECHO) "  CC        $@"
+	@mkdir -p `dirname $@` 
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
 $(EXE_OBJ): | $(OBJDIR) $(OUTDIR)

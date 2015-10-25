@@ -37,7 +37,7 @@ typedef struct
     /** Current physical address. */
     size_t physicalAddr;
     /** Curren logical address. */
-    uint16_t logicalAddr;
+    uint16_t logicalAddr;   // [todo] size_t instead of uint16_t
     /** Current offset (number of bytes processed so far). */
     size_t offset;
     /** Label repository. */
