@@ -19,7 +19,8 @@
 
 /**
  * Inialize label extraction loop.
- * Returns 1 upon success or 0 if and error occured.
+ * \param [in] callback_data Decoder.
+ * \return 1 upon success or 0 if and error occured.
  */
 static int pce_labelExtractorInitialize(void *callback_data)
 {
@@ -44,7 +45,14 @@ static int pce_labelExtractorInitialize(void *callback_data)
 }
 
 /**
- * [todo]
+ * Label extration loop iteration.
+ * Decode current intruction and if it is a branch/jump add a new label
+ * to the repository.
+ * \param [in] callback_data Decoder.
+ * \return
+ *     < 0 if an error occured.
+ *     = 0 upon success and if no more iteration needs to be performed. 
+ *     > 0 upon success and if another iteration needs to be performed.
  */
 static int pce_labelExtractorIterate(void *callback_data)
 {
@@ -76,6 +84,8 @@ static int pce_labelExtractorIterate(void *callback_data)
     
     physical = decoder->physicalAddr + decoder->offset;
     logical  = decoder->logicalAddr  + decoder->offset;
+
+    eor = 0;
     
     /* Read instruction */
     inst = readByte(decoder->memmap, physical);
@@ -156,7 +166,9 @@ static int pce_labelExtractorIterate(void *callback_data)
 }
 
 /**
- * [todo]
+ * Finalize label extraction.
+ * \param [in] callback_data Decoder.
+ * \return 1 upon success or 0 if and error occured.
  */
 static int pce_labelExtractorFinalize(void *callback_data)
 {
