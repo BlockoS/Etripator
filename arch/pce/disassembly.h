@@ -15,19 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with Etripator.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef PCE_LABELS_H
-#define PCE_LABELS_H
+#ifndef PCE_DISASSEMBLY_H
+#define PCE_DISASSEMBLY_H
 
 #include "../../decode.h"   // [todo] absolute include
 #include "../../pass.h"     // [todo] absolute include
 #include "opcodes.h"
 
 /**
- * Initialize label extraction pass.
+ * Initialize disassembly pass.
  * \param [in]  decoder Decoder.
  * \param [out] pass Pass.
  * \return always 1.
  */
-int initializeLabelExtractionPass(Decoder *decoder, Pass *pass);
+int initializeDisassemblyPass(Decoder *decoder, Pass *pass);
 
-#endif // PCE_LABELS_H
+#endif // PCE_DISASSEMBLY_H

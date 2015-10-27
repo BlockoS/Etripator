@@ -42,10 +42,12 @@ typedef struct
     size_t offset;
     /** Label repository. */
     LabelRepository* labelRepository;
-    /** Data buffer
+    /** Data buffer.
      *  Used for raw binary data output.
      */
     uint8_t *buffer;
+    /** Automatic extraction. */
+    int automatic;
 } Decoder;
 
 /**
@@ -76,17 +78,5 @@ void deleteDecoder(Decoder *decoder);
  * \return 1 upon success, 0 if an error occured.
  */
 int processDataSection(Decoder *decoder);
-
-/**
- * Parse section to identify potential labels 
- * \param [in,out] decoder Decoder.
- */
-int extractLabels(Decoder *decoder);
-
-/**
- * Process opcode
- * \param [in,out] decoder Decoder.
- */
-char processOpcode(Decoder *decoder);
 
 #endif // DECODE_H

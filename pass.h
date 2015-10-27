@@ -50,6 +50,8 @@ typedef struct
     finalize_callback finalize;
     /** Callback data. */
     void *data;
+    /** Name. */
+    const char *name;
 } Pass;
 
 /**

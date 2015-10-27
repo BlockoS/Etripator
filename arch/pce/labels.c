@@ -161,8 +161,7 @@ static int pce_labelExtractorIterate(void *callback_data)
     {
         eor = 1;
     }       
-
-    return (1 == eor);
+    return (1 != eor);
 }
 
 /**
@@ -172,23 +171,23 @@ static int pce_labelExtractorIterate(void *callback_data)
  */
 static int pce_labelExtractorFinalize(void *callback_data)
 {
-    Decoder *decoder = (Decoder*)callback_data;
-    if(NULL == decoder)
-    {
-        return 0;
-    }
-    decoder->offset = 0;
     // [todo]
+    (void)callback_data;
     return 1;
 }
 
 /**
- * [todo]
+ * Initialize label extraction pass.
+ * \param [in]  decoder Decoder.
+ * \param [out] pass Pass.
+ * \return always 1.
  */
-int createLabelExtractionPass(Pass *pass)
+int initializeLabelExtractionPass(Decoder *decoder, Pass *pass)
 {
     pass->initialize = pce_labelExtractorInitialize;
     pass->iterate    = pce_labelExtractorIterate;
     pass->finalize   = pce_labelExtractorFinalize;
+    pass->data       = decoder;
+    pass->name       = "Label extraction pass";
     return 1;
 }

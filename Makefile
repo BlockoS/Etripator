@@ -20,9 +20,9 @@ OBJDIR := $(OUTDIR)/obj
 
 LIBS   :=  -lm
 
-PCE_SRC := arch/pce/labels.c
+PCE_SRC := arch/pce/opcodes.c arch/pce/labels.c arch/pce/disassembly.c
 
-EXE_SRC := $(PCE_SRC) message.c pass.c decode.c cfg.c section.c opcodes.c labels.c labelsloader.c irq.c memory.c memorymap.c rom.c cd.c options.c etripator.c
+EXE_SRC := $(PCE_SRC) message.c pass.c decode.c cfg.c section.c labels.c labelsloader.c irq.c memory.c memorymap.c rom.c cd.c options.c etripator.c
 OBJS    := $(EXE_SRC:.c=.o)
 EXE_OBJ := $(addprefix $(OBJDIR)/, $(OBJS))
 EXE     := $(OUTDIR)/etripator
@@ -50,9 +50,6 @@ $(EXE_OBJ): | $(OBJDIR) $(OUTDIR)
 
 $(OUTDIR):
 	@mkdir  -p $(OUTDIR)
-
-$(OBJDIR):
-	@mkdir  -p $(OBJDIR)
 
 install:
 

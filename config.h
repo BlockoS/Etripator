@@ -19,7 +19,7 @@
 #define CONFIG_H
 
 #if defined(_MSC_VER)
-#include "platform/windows/config_win.h"
+#include "platform/windows/config.h"
 #else
 #define _GNU_SOURCE
 
@@ -43,13 +43,13 @@
 #include <limits.h>
 #include <ctype.h>
 
-#ifndef APIENTRY
-#define APIENTRY
-#endif
-
 #ifndef ARCH_API
+#if defined(HAVE_VISIBILITY)
+#define ARCH_API __attribute__((__visibility__("default")))
+#else
 #define ARCH_API
-#endif
+#endif // HAVE_VISIBILITY
+#endif // ARCH_API
 
 #endif
 

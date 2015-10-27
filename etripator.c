@@ -22,12 +22,15 @@
 #include "memorymap.h"
 #include "section.h"
 #include "decode.h"
-#include "opcodes.h"
 #include "irq.h"
 #include "rom.h"
 #include "cd.h"
 #include "options.h"
 #include "labelsloader.h"
+
+/* [todo] */
+#include "arch/pce/labels.h"
+#include "arch/pce/disassembly.h"
 
 /*
   exit callback
@@ -55,6 +58,9 @@ int main(int argc, char** argv)
     Decoder decoder;
 
     MemoryMap memmap;
+
+    /* [todo] */
+    Pass pass[2];
 
     atexit(exit_callback);
 
@@ -171,6 +177,11 @@ int main(int argc, char** argv)
         }
     }
 
+    decoder.automatic = cmdOptions.extractIRQ;
+    /* [todo] test */
+    initializeLabelExtractionPass(&decoder, &pass[0]);
+    initializeDisassemblyPass    (&decoder, &pass[1]);
+
     /* Disassemble and output */
     for(i=0; i<sectionCount; ++i)
     {
@@ -204,30 +215,22 @@ int main(int argc, char** argv)
 
         /* Reset decoder */
         resetDecoder(&memmap, out, &section[i], &decoder);
-
+        
         if(CODE == section[i].type)
         {
-            char eor;
-            
             /* Extract labels */
-            ret = extractLabels(&decoder);
+            ret = perform(&pass[0]);
             if(0 == ret)
             {
                 goto error_4;
             }
 
             /* Process opcodes */
-            do 
+            ret = perform(&pass[1]);
+            if(0 == ret)
             {
-                eor = processOpcode(&decoder);
-                if(!cmdOptions.extractIRQ)
-                {
-                    if(decoder.offset >= decoder.section->size)
-                        eor = 1;
-                    else
-                        eor = 0;
-                }
-            } while(!eor);
+                goto error_4;
+            }
         }
         else
         {

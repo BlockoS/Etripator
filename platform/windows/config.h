@@ -1,6 +1,6 @@
 /*
     This file is part of Etripator,
-    copyright (c) 2009--2015 Vincent Cruz.
+    copyright (c) 2009--2012 Vincent Cruz.
 
     Etripator is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,19 +15,38 @@
     You should have received a copy of the GNU General Public License
     along with Etripator.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef PCE_LABELS_H
-#define PCE_LABELS_H
+#ifndef CONFIG_WINDOWS_H
+#define CONFIG_WINDOWS_H
 
-#include "../../decode.h"   // [todo] absolute include
-#include "../../pass.h"     // [todo] absolute include
-#include "opcodes.h"
+#define _GNU_SOURCE
 
-/**
- * Initialize label extraction pass.
- * \param [in]  decoder Decoder.
- * \param [out] pass Pass.
- * \return always 1.
- */
-int initializeLabelExtractionPass(Decoder *decoder, Pass *pass);
+#pragma warning(disable : 4996)
 
-#endif // PCE_LABELS_H
+#include <Windows.h>
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#define snprintf _snprintf
+
+#include "getopt_win.h"
+#include "stdint.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include <string.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <ctype.h>
+
+#ifdef ARCH_EXPORTS
+#define ARCH_API __declspec(dllexport)
+#else
+#define ARCH_API __declspec(dllimport)
+#endif
+
+#endif // CONFIG_WINDOWS_H

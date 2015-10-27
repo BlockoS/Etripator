@@ -48,7 +48,7 @@ int perform(Pass *pass)
     {
         /* nothing atm */    
     }
-    if(0 != ret)
+    if(0 == ret)
     {
         ret = pass->finalize(pass->data);
     }

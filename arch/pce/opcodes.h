@@ -18,6 +18,8 @@
 #ifndef OPCODES_H
 #define OPCODES_H
 
+#include "../../config.h" // [todo] absolute path
+
 /*
   Opcodes:
      name
@@ -25,9 +27,9 @@
      type (for output, see below.)
 */
 struct opcode_ {
-  char          name[5];
-  unsigned char size;
-  unsigned char type;
+  char    name[5];
+  uint8_t size;
+  uint8_t type;
 };
 typedef struct opcode_ Opcode;
 
