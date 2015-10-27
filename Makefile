@@ -51,6 +51,9 @@ $(EXE_OBJ): | $(OBJDIR) $(OUTDIR)
 $(OUTDIR):
 	@mkdir  -p $(OUTDIR)
 
+$(OBJDIR):
+	@mkdir  -p $(OBJDIR)
+
 install:
 
 clean: FORCE
